@@ -73,6 +73,8 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
 - **Icons:** import from `lucide-react` directly where they are used, with no wrapper.
 - **Layout:** the app is one fixed screen at every width, and only inner lists scroll. Below 1100px the sidebar is a rail with a drawer. At 760px and below, panels open over the chat.
+- **Bookings agenda:** `bookings-agenda.tsx` is the chat card for `/bookings`, listing bookings by day, with logic in `booking-agenda.ts`, tested in `client/tests/`. Its buttons only send a request, and approval still applies, so it can never change a booking by itself.
+- **Sidebar:** My bookings and Memory send `/bookings` and `/memory` to the chat. The right panel only ever shows the trace. `/bookings` makes no tool call when the budget runs low, so checking can never spend what a waiting booking needs.
 - **Confirmation card:** send it only from `finishBooking` and `finishChange`, which run after verification. It never carries a button.
 - **Cards:** every card fills the chat column and uses the shared `card` shell. The main action is the rightmost button at the bottom-right. Cards respond to the chat's width through a container query, not the screen's.
 - **Summary view honesty:** every line, including the safety checks, must be worked out from recorded events, so a run that broke a rule shows a failed check. Never hardcode a pass. Details must keep showing state transitions, model calls, tool arguments and latency, because the assignment grades them.

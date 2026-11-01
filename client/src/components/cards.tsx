@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react';
 import { Check, ChevronRight, ShieldAlert, TriangleAlert, X } from 'lucide-react';
 import { formatSlot, rupees, slotMessage } from '../format.ts';
 import type { Card, SendMessage, SessionView, Step } from '../types.ts';
-import { BookingsCard } from './bookings-card.tsx';
+import { BookingsAgenda } from './bookings-agenda.tsx';
 import { ConfirmationCard } from './confirmation-card.tsx';
 import { Glide } from './glide.tsx';
 import { MemoryCard } from './memory-rows.tsx';
@@ -215,7 +215,7 @@ export function MessageCard({ card, current, ...actions }: { card: Card; current
     case 'reviews':
       return <ReviewsCard {...card} />;
     case 'bookings':
-      return <BookingsCard bookings={actions.bookings} />;
+      return <BookingsAgenda bookings={actions.bookings} onAct={actions.send} pending={actions.pending} />;
     case 'confirmation':
       return <ConfirmationCard {...card} bookings={actions.bookings} send={actions.send} pending={actions.pending} />;
     case 'memory':

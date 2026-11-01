@@ -31,6 +31,8 @@ Set `DATA_DIR` to keep a test server away from `data/`, and `PORT` to use anothe
 | `/scenario <name>` | Force a mock outcome: `review_injection`, `timeout_but_booked`, `timeout_not_booked`, `slot_taken`, `price_change`, `slot_conflict` or `default`. |
 | `/restart` | Kill the agent at the next book call, then recover from disk. |
 
+My bookings and Memory in the sidebar run `/bookings` and `/memory` in the chat. Click a booking to reschedule or cancel it, which still asks you to confirm.
+
 To see a failure handled, run `/scenario timeout_but_booked`, then book something. To see an injection ignored, ask "What do people say about AquaFix?".
 
 ## The trace panel

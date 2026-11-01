@@ -209,3 +209,18 @@ test('saying no to a guess forgets it for good', async () => {
   await agent.handleMessage('s1', '1');
   assert.equal(factOf(await agent.handleMessage('s1', 'yes'), 'technician:plumber'), undefined);
 });
+
+test('checking bookings many times cannot spend the budget a waiting booking needs', async () => {
+  const { agent, provider } = setup({ bookOutcomes: ['success'] });
+  await agent.handleMessage('s1', 'Find a plumber in Powai this week under 2000');
+  await agent.handleMessage('s1', '1');
+  for (let i = 0; i < 25; i++) {
+    const view = await agent.handleMessage('s1', '/bookings');
+    assert.equal(view.state, 'AWAITING_APPROVAL', `after ${i + 1} checks`);
+    assert.ok(view.messages.at(-1)!.cards.some((card) => card.type === 'bookings'), 'the bookings still show');
+  }
+  const before = provider.state.bookings.length;
+  const done = await agent.handleMessage('s1', 'yes');
+  assert.equal(done.state, 'DONE');
+  assert.equal(provider.state.bookings.length, before + 1);
+});

@@ -192,7 +192,7 @@ export function Chat({ composerKey, session, loading, liveState, error, composer
       {loading
         ? <ChatSkeleton />
         : <Thread key={session.id} session={session} liveState={liveState} error={error} send={composer.onSubmit} fillComposer={fillComposer} pending={composer.pending} />}
-      <button type="button" className="panel-toggle" aria-label={panelOpen ? 'Close panel' : 'Open trace'} title={panelOpen ? 'Close panel' : 'Open trace'} onClick={onTogglePanel}>
+      <button type="button" className="panel-toggle" aria-label={panelOpen ? 'Close trace' : 'Open trace'} title={panelOpen ? 'Close trace' : 'Open trace'} onClick={onTogglePanel}>
         {panelOpen ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
       </button>
       <div className="composer-wrap"><Composer key={composerKey} {...composer} /></div>

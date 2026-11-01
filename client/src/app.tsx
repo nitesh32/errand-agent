@@ -7,7 +7,7 @@ import { Sidebar } from './components/sidebar.tsx';
 import { AppSkeleton } from './components/skeleton.tsx';
 import { readRecent, readStorage, rememberSession, writeStorage } from './storage.ts';
 import type { RecentSession } from './storage.ts';
-import type { Panel, SendMessage } from './types.ts';
+import type { Card, Panel, SendMessage } from './types.ts';
 import { isNarrow, isPhone, isTouch, restingPanel } from './viewport.ts';
 
 const SIDEBAR_KEY = 'errand.sidebarCollapsed';
@@ -56,6 +56,18 @@ export function App() {
         showSession(id);
       },
     });
+  }
+
+  /** The sidebar's bookings and memory are ordinary commands, shown as cards in the chat. */
+  function showInChat(command: string, card: Card['type']) {
+    if (pending || loadingChat) return;
+    if (isPhone()) setPanel('none');
+    if (session?.messages.at(-1)?.cards.some(({ type }) => type === card)) {
+      const scroller = document.querySelector('.messages');
+      scroller?.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+    } else {
+      send(command);
+    }
   }
 
   const needsSession = !sessionId || sessionQuery.error?.status === 404;
@@ -117,6 +129,7 @@ export function App() {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         onPanel={setPanel}
+        onShow={showInChat}
         onNewErrand={newErrand}
         onOpenSession={showSession}
       />
@@ -131,8 +144,6 @@ export function App() {
             loading={loadingChat}
             lastTurnMs={lastTurnMs}
             live={pending}
-            send={send}
-            fillComposer={setPrefill}
           />
         </main>
       )}

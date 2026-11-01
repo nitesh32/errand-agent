@@ -4,7 +4,7 @@ import { Activity, Brain, CalendarCheck, Moon, PanelLeftClose, PanelLeftOpen, Sq
 import { RECENT_GROUPS, formatChatDate, recentGroup } from '../format.ts';
 import { readStorage, THEME_KEY, writeStorage } from '../storage.ts';
 import type { RecentSession } from '../storage.ts';
-import type { Panel, SessionView } from '../types.ts';
+import type { Card, Panel, SessionView } from '../types.ts';
 import { isNarrow, restingPanel } from '../viewport.ts';
 import { Glide } from './glide.tsx';
 
@@ -98,16 +98,16 @@ interface SidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
   onPanel: (panel: Panel) => void;
+  onShow: (command: string, card: Card['type']) => void;
   onNewErrand: () => void;
   onOpenSession: (id: string) => void;
 }
 
-export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collapsed, onCollapse, onPanel, onNewErrand, onOpenSession }: SidebarProps) {
+export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collapsed, onCollapse, onPanel, onShow, onNewErrand, onOpenSession }: SidebarProps) {
   const [theme, setTheme] = useState(() => readStorage<Theme>(THEME_KEY, 'light'));
   const { scenario, seed } = session.world;
   const upcoming = session.bookings.filter((booking) => booking.status === 'upcoming').length;
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
-  const togglePanel = (target: Panel) => onPanel(panel === target ? restingPanel() : target);
 
   // On narrow screens the expanded sidebar is a drawer over the content, so picking a row closes it.
   function closeDrawer(event: MouseEvent) {
@@ -131,10 +131,10 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collaps
 
       <Glide className="nav-group">
         <NavButton on={isEmptyChat} onClick={onNewErrand} icon={<SquarePen size={15} />} label="New" />
-        <NavButton on={panel === 'bookings'} onClick={() => togglePanel('bookings')} icon={<CalendarCheck size={15} />} label="My bookings" aside={upcoming} />
-        <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Brain size={15} />} label="Memory" aside={session.memory.facts.length} />
+        <NavButton on={false} onClick={() => onShow('/bookings', 'bookings')} icon={<CalendarCheck size={15} />} label="My bookings" aside={upcoming} />
+        <NavButton on={false} onClick={() => onShow('/memory', 'memory')} icon={<Brain size={15} />} label="Memory" aside={session.memory.facts.length} />
         <span className="phone-only">
-          <NavButton on={panel === 'trace'} onClick={() => togglePanel('trace')} icon={<Activity size={15} />} label="Trace" />
+          <NavButton on={panel === 'trace'} onClick={() => onPanel(panel === 'trace' ? restingPanel() : 'trace')} icon={<Activity size={15} />} label="Trace" />
         </span>
       </Glide>
 

@@ -4,6 +4,9 @@ import { currentApproval, formatSlot, rupees, say, trace } from './session.ts';
 import type { Option, Session, Turn } from './session.ts';
 import { isAtRest } from './state-machine.ts';
 
+// Enough for a hold, every book attempt and its status check.
+const BOOKING_TOOL_CALLS = 8;
+
 export function findOption(session: Session, selection: Selection | undefined): Option | undefined {
   if (!selection) return undefined;
   return session.options.find(
@@ -27,6 +30,12 @@ export function remind(turn: Turn): void {
 }
 
 export async function showBookings(turn: Turn): Promise<void> {
+  // Only a read, so it must never spend what a booking in progress needs. The card shows live data anyway.
+  if (!turn.limits.hasToolCalls(BOOKING_TOOL_CALLS)) {
+    say(turn, 'Here are your bookings.');
+    turn.cards.push({ type: 'bookings' });
+    return remind(turn);
+  }
   const bookings = await turn.tools.list_bookings();
   const lines = bookings
     .sort((a, b) => b.slot.localeCompare(a.slot))
