@@ -1,49 +1,69 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { FocusEvent, MouseEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
+const ROW = '[data-glide]:not(:disabled)';
 
 interface GlideProps {
   children: ReactNode;
   className?: string;
-  /** Rest here when nothing is hovered, such as the keyboard's current row. */
+  /** Keeps the highlight on this row, for keyboard menus. */
   activeIndex?: number;
+  onMouseLeave?: () => void;
 }
 
-interface Box {
-  top: number;
-  height: number;
-}
-
-/** One highlight that slides between rows marked `data-glide`, instead of each row lighting up. */
-export function Glide({ children, className = '', activeIndex }: GlideProps) {
+/**
+ * One hover layer that glides between rows, ported from Beautiful UI's GlideMenu. Leaving only
+ * fades it, so it keeps its place and glides from there on return. Two additions: `activeIndex`,
+ * and re-measuring when rows shift, such as time chips opening under a row.
+ */
+export function Glide({ children, className = '', activeIndex, onMouseLeave }: GlideProps) {
   const container = useRef<HTMLDivElement>(null);
   const currentRow = useRef<HTMLElement | null>(null);
-  const [box, setBox] = useState<Box | null>(null);
+  const [box, setBox] = useState<{ top: number; height: number } | null>(null);
+  const [visible, setVisible] = useState(false);
 
-  const activeRow = () => (activeIndex === undefined ? null : container.current?.querySelectorAll<HTMLElement>('[data-glide]')[activeIndex] ?? null);
-
-  function measure() {
-    // The remembered row is gone when the list's rows are replaced, so fall back to the active one.
-    if (!currentRow.current?.isConnected) currentRow.current = activeRow();
-    const row = currentRow.current;
-    const next = row ? { top: row.offsetTop, height: row.offsetHeight } : null;
-    setBox((previous) => (previous?.top === next?.top && previous?.height === next?.height ? previous : next));
+  function measure(row: HTMLElement) {
+    const parent = container.current!;
+    const top = row.getBoundingClientRect().top - parent.getBoundingClientRect().top - parent.clientTop;
+    const height = row.getBoundingClientRect().height;
+    setBox((previous) => (previous?.top === top && previous.height === height ? previous : { top, height }));
   }
 
-  function moveTo(row: Element | null | undefined) {
-    currentRow.current = row instanceof HTMLElement ? row : null;
-    measure();
+  function moveTo(target: EventTarget | null | undefined) {
+    if (!(target instanceof Element)) return;
+    const row = target.closest<HTMLElement>(ROW);
+    if (!row || !container.current?.contains(row)) return;
+    currentRow.current = row;
+    measure(row);
+    setVisible(true);
   }
 
-  const follow = (event: MouseEvent | FocusEvent) => moveTo((event.target as Element).closest('[data-glide]:not(:disabled)'));
-  const rest = () => moveTo(activeRow());
+  useLayoutEffect(() => {
+    if (activeIndex === undefined) setVisible(false);
+    else moveTo(container.current?.querySelectorAll(ROW)[activeIndex]);
+  }, [activeIndex]);
 
-  useLayoutEffect(rest, [activeIndex]);
-  // Rows can shift when content changes, such as time chips opening under a row.
-  useLayoutEffect(measure);
+  useLayoutEffect(() => {
+    if (currentRow.current?.isConnected) measure(currentRow.current);
+  });
 
   return (
-    <div ref={container} className={`glide ${className}`} onMouseOver={follow} onFocus={follow} onMouseLeave={rest} onBlur={rest}>
-      <span className="glide-highlight" aria-hidden="true" style={{ top: box?.top ?? 0, height: box?.height ?? 0, opacity: box ? 1 : 0 }} />
+    <div
+      ref={container}
+      className={`glide ${className}`}
+      onMouseOver={(event) => moveTo(event.target)}
+      onMouseLeave={() => {
+        if (activeIndex === undefined) setVisible(false);
+        onMouseLeave?.();
+      }}
+      onFocusCapture={(event) => moveTo(event.target)}
+      onBlurCapture={(event) => {
+        // Clicking a chat moves focus to the input, so the pointer may still be on the row.
+        const leftGroup = !container.current?.contains(event.relatedTarget);
+        if (leftGroup && activeIndex === undefined && !container.current?.matches(':hover')) setVisible(false);
+      }}
+    >
+      <span className="glide-highlight" aria-hidden="true" style={{ top: box?.top ?? 0, height: box?.height ?? 0, opacity: box && visible ? 1 : 0 }} />
       {children}
     </div>
   );

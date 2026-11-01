@@ -48,6 +48,8 @@ export interface ComposerProps {
 export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, prefill, onPrefillUsed }: ComposerProps) {
   const [draft, setDraft] = useState('');
   const [active, setActive] = useState(0);
+  // The highlight appears only once a row is hovered or an arrow key is used.
+  const [engaged, setEngaged] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   // Opened by the / button. Typing then filters commands without needing to type the slash.
   const [commandsOpen, setCommandsOpen] = useState(false);
@@ -57,6 +59,7 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
 
   useEffect(() => {
     setActive(0);
+    setEngaged(false);
     setDismissed(false);
   }, [draft]);
 
@@ -112,6 +115,7 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
     if (event.nativeEvent.isComposing) return;
     if (items.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
       event.preventDefault();
+      setEngaged(true);
       setActive((current) => (current + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length);
     } else if (items.length && event.key === 'Escape') {
       closeMenu();
@@ -132,9 +136,9 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
   return (
     <form className="composer" onSubmit={submit}>
       {items.length > 0 && (
-        <Glide className="command-menu" activeIndex={Math.min(active, items.length - 1)}>
+        <Glide className="command-menu" activeIndex={engaged ? Math.min(active, items.length - 1) : undefined} onMouseLeave={() => setEngaged(false)}>
           {items.map((item, index) => (
-            <button type="button" className="command" data-glide key={item.value} onMouseDown={keepFocus} onMouseEnter={() => setActive(index)} onClick={() => pick(item)}>
+            <button type="button" className="command" data-glide key={item.value} onMouseDown={keepFocus} onMouseEnter={() => { setActive(index); setEngaged(true); }} onClick={() => pick(item)}>
               <span className="command-name">{item.label}</span>
               <span className="muted">{item.description}</span>
             </button>
