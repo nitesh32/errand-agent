@@ -8,16 +8,17 @@ import { AppSkeleton } from './components/skeleton.tsx';
 import { readRecent, readStorage, rememberSession, writeStorage } from './storage.ts';
 import type { RecentSession } from './storage.ts';
 import type { Panel, SendMessage } from './types.ts';
+import { isNarrow, isPhone, isTouch, restingPanel } from './viewport.ts';
 
 const SIDEBAR_KEY = 'errand.sidebarCollapsed';
 
 export function App() {
   const [sessionId, setSessionId] = useState<string | null>(() => location.hash.slice(1) || null);
-  const [panel, setPanel] = useState<Panel>('trace');
+  const [panel, setPanel] = useState<Panel>(restingPanel);
   const [prefill, setPrefill] = useState<string | null>(null);
   const [lastTurnMs, setLastTurnMs] = useState(0);
   const [recent, setRecent] = useState<RecentSession[]>(readRecent);
-  const [collapsed, setCollapsed] = useState(() => readStorage(SIDEBAR_KEY, false));
+  const [collapsed, setCollapsed] = useState(() => isNarrow() || readStorage(SIDEBAR_KEY, false));
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const sessionQuery = useSession(sessionId);
@@ -37,19 +38,21 @@ export function App() {
     setLastTurnMs(0);
     setPrefill(null);
     setSessionId(id);
+    // A phone's panel covers the chat, so opening a chat has to close it.
+    if (isPhone()) setPanel('none');
   }
 
   function newErrand() {
     if (createSession.isPending) return;
     // An untouched chat is already a new errand, so there is nothing to create.
     if (isEmptyChat) {
-      setPanel('trace');
+      setPanel(restingPanel());
       inputRef.current?.focus();
       return;
     }
     createSession.mutate(undefined, {
       onSuccess: ({ id }) => {
-        setPanel('trace');
+        setPanel(restingPanel());
         showSession(id);
       },
     });
@@ -71,11 +74,12 @@ export function App() {
   }, [session]);
 
   useEffect(() => {
-    writeStorage(SIDEBAR_KEY, collapsed);
+    if (!isNarrow()) writeStorage(SIDEBAR_KEY, collapsed);
   }, [collapsed]);
 
+  // Not on touch screens, where it would raise the keyboard over the reply.
   useEffect(() => {
-    if (!pending) inputRef.current?.focus();
+    if (!pending && !isTouch()) inputRef.current?.focus();
   }, [pending, sessionId]);
 
   // Stable, so memoised messages do not re-render when the parent does.
@@ -100,7 +104,7 @@ export function App() {
   };
   // During a turn the panel shows live progress. Messages stay with the main query.
   const panelSession = live ? { ...session, state: live.state, trace: live.trace, runId: live.runId, limits: live.limits } : session;
-  const isHome = isEmptyChat && panel === 'trace';
+  const isHome = isEmptyChat && panel === restingPanel();
   const error = sendMessage.error && `${sendMessage.error.message}. Please try again.`;
 
   return (

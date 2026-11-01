@@ -5,6 +5,6 @@ export type { Card, Message, Option, Step, WorkflowState } from '../../server/sr
 export type { Fact } from '../../server/src/memory/memory.ts';
 export type { Booking, TraceEvent } from '../../server/src/types.ts';
 
-export type Panel = 'trace' | 'memory' | 'bookings';
+export type Panel = 'none' | 'trace' | 'memory' | 'bookings';
 
 export type SendMessage = (text: string, approvalId?: string) => void;

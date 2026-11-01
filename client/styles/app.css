@@ -54,7 +54,7 @@ button:disabled { cursor: default; }
 .nav:active, .option:active:not(:disabled), .suggestion:active:not(:disabled) { transform: scale(0.98); }
 
 /* Layout */
-.app { display: flex; height: 100%; }
+.app { display: flex; height: 100dvh; }
 .sidebar { flex: none; width: var(--sidebar-width); display: flex; flex-direction: column; gap: 12px; padding: 12px 7px 12px 8px; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; }
 .workspace { flex: 1; min-width: 0; display: flex; }
 .chat { flex: 1 1 560px; min-width: 0; display: flex; flex-direction: column; }
@@ -90,7 +90,7 @@ button:disabled { cursor: default; }
 .world-line { display: inline-flex; align-items: center; gap: 6px; }
 
 /* Home */
-.home { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 48px 24px; overflow-y: auto; }
+.home { flex: 1; min-width: 0; display: flex; align-items: safe center; justify-content: center; padding: 48px 24px; overflow-y: auto; }
 .home-column { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 20px; }
 .suggestions { display: flex; flex-direction: column; gap: 6px; }
 .suggestion { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 0; border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-btn); font-size: var(--text-md); text-align: left; cursor: pointer; transition: background-color 150ms, transform 150ms; }
@@ -134,13 +134,13 @@ button:disabled { cursor: default; }
 .composer-ghost, .composer-send { width: var(--control-height); height: var(--control-height); flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: var(--radius-control); cursor: pointer; transition: background-color 150ms, color 150ms, transform 150ms; }
 .composer-ghost { background: transparent; color: var(--text-muted); font-size: var(--text-base); }
 .composer-ghost:hover, .composer-ghost[aria-expanded='true'] { background: var(--surface-subtle); color: var(--text); }
-.composer-model { flex: none; align-self: flex-end; padding: 0 6px; font-size: var(--text-sm); font-weight: 500; line-height: var(--control-height); color: var(--text-muted); }
+.composer-model { flex: 0 1 auto; min-width: 0; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: flex-end; padding: 0 6px; font-size: var(--text-sm); font-weight: 500; line-height: var(--control-height); color: var(--text-muted); }
 .composer-send { background: var(--text); color: var(--surface); transition-duration: 200ms; }
 .composer-send:disabled { background: var(--border); color: var(--text-muted); }
 .composer-ghost:active, .composer-send:active:not(:disabled) { transform: scale(0.94); }
 .command-menu { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 2; padding: 4px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-raised); animation: pop-in 180ms var(--ease-out) both; transform-origin: bottom center; }
 .command-menu .glide-highlight { left: 4px; right: 4px; border-radius: var(--radius-chip); }
-.command { width: 100%; height: var(--row-height); display: flex; align-items: center; gap: 10px; padding: 0 8px; border: 0; border-radius: var(--radius-chip); background: transparent; font-size: var(--text-md); text-align: left; cursor: pointer; }
+.command { width: 100%; min-height: var(--row-height); display: flex; align-items: center; gap: 10px; padding: 0 8px; border: 0; border-radius: var(--radius-chip); background: transparent; font-size: var(--text-md); text-align: left; cursor: pointer; }
 .command-name { flex: none; font-weight: 500; }
 .command-hint { margin-top: 4px; padding: 6px 8px 4px; border-top: 1px solid var(--border-soft); font-size: var(--text-xs); color: var(--text-muted); }
 
@@ -235,21 +235,21 @@ button:disabled { cursor: default; }
 .fact-guess { background: var(--warn-bg); }
 .fact-guess .muted, .fact-guess .label { color: var(--text-strong-muted); }
 
-/* The sidebar only collapses when it sits beside the content. */
-@media (min-width: 1101px) {
-  /* The page itself never moves: only the lists inside it scroll, and they stop at their ends. */
-  html, body { overflow: hidden; overscroll-behavior: none; }
-  .sidebar, .sidebar-recent, .home, .messages, .panel-body { overscroll-behavior: contain; }
-  .messages, .panel-body { scrollbar-gutter: stable; }
-  .sidebar { transition: width 280ms var(--ease-sidebar); }
-  .nav-text { transition: opacity 180ms, translate 180ms; }
-  .sidebar-fold { transition: opacity 180ms, visibility 180ms; }
-  .sidebar-collapsed { width: var(--sidebar-rail); overflow: hidden; }
-  .sidebar-collapsed .nav-text { opacity: 0; translate: -8px 0; }
-  .sidebar-collapsed .sidebar-fold { opacity: 0; visibility: hidden; }
-  .sidebar-collapsed .brand-name { display: none; }
-  .sidebar-collapsed .brand { padding: 0; justify-content: center; }
-}
+/* The page itself never moves: only the lists inside it scroll, and they stop at their ends. */
+html, body { overflow: hidden; overscroll-behavior: none; }
+.sidebar, .sidebar-recent, .home, .messages, .panel-body { overscroll-behavior: contain; }
+.messages, .panel-body { scrollbar-gutter: stable; }
+
+/* Collapsing the sidebar leaves a rail of icons. */
+.sidebar { transition: width 280ms var(--ease-sidebar); }
+.nav-text { transition: opacity 180ms, translate 180ms; }
+.sidebar-fold { transition: opacity 180ms, visibility 180ms; }
+.sidebar-collapsed { width: var(--sidebar-rail); overflow: hidden; }
+.sidebar-collapsed .nav-text { opacity: 0; translate: -8px 0; }
+.sidebar-collapsed .sidebar-fold { opacity: 0; visibility: hidden; }
+.sidebar-collapsed .brand-name { display: none; }
+.sidebar-collapsed .brand { padding: 0; justify-content: center; }
+.phone-only, .drawer-backdrop { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
@@ -264,29 +264,50 @@ button:disabled { cursor: default; }
   .time-chip, .filter-chip { min-height: 32px; }
   .composer-ghost, .composer-send { width: 36px; height: 36px; }
   .composer-model { line-height: 36px; }
+  /* iPhone Safari zooms the page when focusing a smaller input. */
+  .composer-input, .card-input { font-size: var(--text-lg); }
 }
 
-/* Narrow screens stack everything and let the page scroll. */
+/* Narrow screens keep the rail. Expanding it opens a drawer over the content. */
 @media (max-width: 1100px) {
-  html, body, #root, .app { height: auto; }
-  .app, .workspace { flex-direction: column; }
-  .collapse-button { display: none; }
-  .sidebar-fold { width: auto; }
-  .sidebar-recent { flex: none; max-height: 200px; }
-  .sidebar { flex: none; width: auto; border-right: 0; border-bottom: 1px solid var(--border); }
-  .world-card { margin-top: 0; }
-  .chat { flex: none; }
-  .messages { overflow: visible; }
-  .side-panel { flex: none; min-width: 0; border-left: 0; border-top: 1px solid var(--border); }
-  .panel-body { overflow: visible; }
+  .app { padding-left: var(--sidebar-rail); }
+  .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 10; }
+  .sidebar:not(.sidebar-collapsed) { box-shadow: var(--shadow-raised); }
+  .sidebar-collapsed .sidebar-fold { display: none; }
+  .sidebar-footer { margin-top: auto; }
+  .drawer-backdrop { display: block; position: fixed; inset: 0; z-index: 9; border: 0; background: var(--scrim); }
+}
+
+/* Phones have no room for two columns, so a panel opens over the chat. */
+@media (max-width: 760px) {
+  .phone-only { display: contents; }
+  .workspace { position: relative; }
+  .side-panel { position: absolute; inset: 0; z-index: 5; min-width: 0; border-left: 0; }
+}
+
+/* A side panel this narrow leaves too little room for the time column. */
+@media (max-width: 900px) {
+  .trace-row { grid-template-columns: 50px minmax(0, 1fr) 44px; }
+  .trace-row > :first-child { display: none; }
 }
 
 @media (max-width: 640px) {
+  .composer-model { display: none; }
+  .home { padding: 24px 16px; }
+  .panel-header { flex-wrap: wrap; }
+  .panel-header .button-row { flex: 0 1 auto; flex-wrap: wrap; }
+  .spread { flex-wrap: wrap; }
+  .step { border-radius: var(--radius-card); }
+  .chat-header, .messages, .composer-wrap { padding-left: 16px; padding-right: 16px; }
+}
+
+/* Cards follow the chat's width, not the screen's, because the side panel can narrow it too. */
+.chat { container-type: inline-size; }
+@container (max-width: 560px) {
   .option { grid-template-columns: 16px minmax(0, 1fr) 56px; }
   .option > :nth-child(3) { display: none; }
   .option > :nth-child(4) { grid-column: 2 / 4; grid-row: 2; }
   .option > :nth-child(5) { grid-column: 3; grid-row: 1; }
-  .chat-header, .messages, .composer-wrap { padding-left: 16px; padding-right: 16px; }
 
   /* Each booking becomes two lines, so status and price stay on screen without scrolling. */
   .bookings-table, .bookings-table tbody { display: block; min-width: 0; }

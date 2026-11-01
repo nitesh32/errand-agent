@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
-import { Brain, CalendarCheck, Moon, PanelLeftClose, PanelLeftOpen, SquarePen, Sun, Wrench } from 'lucide-react';
+import type { MouseEvent, ReactNode } from 'react';
+import { Activity, Brain, CalendarCheck, Moon, PanelLeftClose, PanelLeftOpen, SquarePen, Sun, Wrench } from 'lucide-react';
 import { RECENT_GROUPS, formatChatDate, recentGroup } from '../format.ts';
 import { readStorage, THEME_KEY, writeStorage } from '../storage.ts';
 import type { RecentSession } from '../storage.ts';
 import type { Panel, SessionView } from '../types.ts';
+import { isNarrow, restingPanel } from '../viewport.ts';
 import { Glide } from './glide.tsx';
 
 type Theme = 'light' | 'dark';
@@ -106,7 +107,12 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collaps
   const { scenario, seed } = session.world;
   const upcoming = session.bookings.filter((booking) => booking.status === 'upcoming').length;
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
-  const togglePanel = (target: Panel) => onPanel(panel === target ? 'trace' : target);
+  const togglePanel = (target: Panel) => onPanel(panel === target ? restingPanel() : target);
+
+  // On narrow screens the expanded sidebar is a drawer over the content, so picking a row closes it.
+  function closeDrawer(event: MouseEvent) {
+    if (isNarrow() && (event.target as Element).closest('.nav')) onCollapse(true);
+  }
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -114,7 +120,8 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collaps
   }, [theme]);
 
   return (
-    <nav className={collapsed ? 'sidebar sidebar-collapsed' : 'sidebar'} aria-label="Sessions">
+    <>
+    <nav className={collapsed ? 'sidebar sidebar-collapsed' : 'sidebar'} aria-label="Sessions" onClick={closeDrawer}>
       <div className="brand">
         <span className="brand-name"><span className="brand-mark"><Wrench size={14} /></span>Errand</span>
         <button type="button" className="collapse-button" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!collapsed} onClick={() => onCollapse(!collapsed)}>
@@ -126,6 +133,9 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collaps
         <NavButton on={isEmptyChat} onClick={onNewErrand} icon={<SquarePen size={15} />} label="New" />
         <NavButton on={panel === 'bookings'} onClick={() => togglePanel('bookings')} icon={<CalendarCheck size={15} />} label="My bookings" aside={upcoming} />
         <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Brain size={15} />} label="Memory" aside={session.memory.facts.length} />
+        <span className="phone-only">
+          <NavButton on={panel === 'trace'} onClick={() => togglePanel('trace')} icon={<Activity size={15} />} label="Trace" />
+        </span>
       </Glide>
 
       <RecentChats recent={recent} activeId={activeId} onOpenSession={onOpenSession} />
@@ -148,5 +158,7 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collaps
         />
       </Glide>
     </nav>
+    {!collapsed && <button type="button" className="drawer-backdrop" aria-label="Close sidebar" onClick={() => onCollapse(true)} />}
+    </>
   );
 }

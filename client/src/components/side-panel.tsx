@@ -216,6 +216,7 @@ interface SidePanelProps extends MemoryActions {
 }
 
 export function SidePanel({ panel, session, loading, lastTurnMs, live, send, fillComposer }: SidePanelProps) {
+  if (panel === 'none') return null;
   return (
     <aside className="side-panel" aria-label={panel}>
       {panel === 'trace' && (loading ? <TraceSkeleton /> : <TracePanel session={session} lastTurnMs={lastTurnMs} live={live} />)}
