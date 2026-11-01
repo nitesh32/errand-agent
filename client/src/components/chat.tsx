@@ -137,7 +137,7 @@ export function Chat({ session, liveState, error, composer }: ChatProps) {
           {replies.length > 0 && (
             <div className="quick-replies">
               {replies.map((text, index) => (
-                <button type="button" className="btn btn-sm fade-up" key={text} style={{ animationDelay: `${300 + index * 90}ms` }} onClick={() => send(text)}>{text}</button>
+                <button type="button" className="btn fade-up" key={text} style={{ animationDelay: `${300 + index * 90}ms` }} onClick={() => send(text)}>{text}</button>
               ))}
             </div>
           )}

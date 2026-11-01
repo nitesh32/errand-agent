@@ -1,63 +1,115 @@
+/*
+ * The one source of design decisions. Scale values and neutrals follow the
+ * Beautiful UI foundation. Status and primary colours are darkened where theirs
+ * fall below 4.5:1 for text. app.css only ever refers to these tokens.
+ */
 :root {
   color-scheme: light;
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-muted: #f4f4f5;
-  --border: #e4e4e7;
-  --border-soft: #f4f4f5;
-  --text: #18181b;
-  --text-strong-muted: #3f3f46;
-  --text-muted: #5f5f68;
-  --primary: #2563eb;
-  --primary-text: #ffffff;
-  --primary-soft: #f4f7ff;
-  --state-bg: #eff4ff;
-  --state-text: #1d4ed8;
-  --model-bg: #f5f0ff;
-  --model-text: #6d28d9;
-  --ok: #15803d;
-  --ok-bg: #ecfdf3;
-  --ok-border: #bbe5cb;
-  --warn: #a44a04;
-  --warn-bg: #fff7e6;
-  --warn-border: #f5d9a8;
-  --bad: #b91c1c;
-  --bad-bg: #fef2f2;
-  --bad-border: #f3c9c5;
-  --bad-quote: #7f1d1d;
-  --shadow: 0 1px 2px rgba(24, 24, 27, 0.04);
+
+  /* Surfaces */
+  --bg: oklch(0.985 0.001 286.376);
+  --surface: oklch(1 0 0);
+  --surface-muted: oklch(0.961 0.002 247.84);
+
+  /* Borders */
+  --border: oklch(0.912 0.005 258.326);
+  --border-soft: oklch(0.946 0.003 264.542);
+
+  /* Text */
+  --text: oklch(0.247 0.006 258.361);
+  --text-strong-muted: oklch(0.38 0.008 260);
+  --text-muted: oklch(0.506 0.01 264.477);
+
+  /* Accent */
+  --primary: oklch(0.53 0.19 256);
+  --primary-text: oklch(1 0 0);
+  --primary-soft: oklch(0.96 0.019 252.878);
+  --state-bg: oklch(0.96 0.019 252.878);
+  --state-text: oklch(0.47 0.17 256);
+  --model-bg: oklch(0.96 0.02 300);
+  --model-text: oklch(0.47 0.17 300);
+
+  /* Status */
+  --ok: oklch(0.47 0.13 150);
+  --ok-bg: oklch(0.958 0.017 159.118);
+  --ok-border: oklch(0.86 0.06 155);
+  --warn: oklch(0.5 0.13 50);
+  --warn-bg: oklch(0.964 0.021 67.581);
+  --warn-border: oklch(0.87 0.07 67);
+  --bad: oklch(0.5 0.18 25);
+  --bad-bg: oklch(0.956 0.017 17.462);
+  --bad-border: oklch(0.87 0.05 20);
+  --bad-quote: oklch(0.4 0.14 25);
+
+  /* Shadows */
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+  --shadow-raised: 0 8px 24px oklch(0 0 0 / 0.1);
+
+  /* Radii: chips, controls, cards, windows, pills */
+  --radius-chip: 6px;
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --radius-window: 14px;
+  --radius-pill: 999px;
+
+  /* Type scale */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-base: 14px;
+  --text-xl: 24px;
+
+  /* Sizes */
+  --control-height: 28px;
+  --chip-height: 24px;
+  --row-height: 36px;
+  --header-height: 44px;
+  --sidebar-width: 224px;
+  --sidebar-rail: 52px;
+
+  /* Motion */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-sidebar: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fonts */
   --font: Inter, system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #111113;
-  --surface: #18181b;
-  --surface-muted: #27272a;
-  --border: #33333a;
-  --border-soft: #27272a;
-  --text: #f4f4f5;
-  --text-strong-muted: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --primary: #3b82f6;
-  --primary-text: #0b1220;
-  --primary-soft: #1a2438;
-  --state-bg: #1a2438;
-  --state-text: #93b4fb;
-  --model-bg: #261d3a;
-  --model-text: #c4b0fb;
-  --ok: #4ade80;
-  --ok-bg: #12291b;
-  --ok-border: #1f4a30;
-  --warn: #fbbf6b;
-  --warn-bg: #2d2010;
-  --warn-border: #54391a;
-  --bad: #fca5a5;
-  --bad-bg: #2d1515;
-  --bad-border: #5a2a2a;
-  --bad-quote: #fecaca;
-  --shadow: none;
+
+  --bg: oklch(0.209 0.004 264.477);
+  --surface: oklch(0.26 0.006 271.191);
+  --surface-muted: oklch(0.318 0.007 274.747);
+
+  --border: oklch(0.356 0.007 264.474);
+  --border-soft: oklch(0.308 0.006 258.354);
+
+  --text: oklch(0.964 0.002 247.839);
+  --text-strong-muted: oklch(0.86 0.005 255);
+  --text-muted: oklch(0.76 0.008 260.731);
+
+  --primary: oklch(0.68 0.173 253.301);
+  --primary-text: oklch(0.2 0.02 260);
+  --primary-soft: oklch(0.34 0.05 253);
+  --state-bg: oklch(0.34 0.05 253);
+  --state-text: oklch(0.86 0.09 248.33);
+  --model-bg: oklch(0.34 0.05 300);
+  --model-text: oklch(0.86 0.09 300);
+
+  --ok: oklch(0.8 0.15 153.814);
+  --ok-bg: oklch(0.33 0.04 153);
+  --ok-border: oklch(0.42 0.06 153);
+  --warn: oklch(0.83 0.13 65);
+  --warn-bg: oklch(0.34 0.04 60);
+  --warn-border: oklch(0.45 0.06 60);
+  --bad: oklch(0.8 0.11 21.433);
+  --bad-bg: oklch(0.33 0.05 21);
+  --bad-border: oklch(0.45 0.08 21);
+  --bad-quote: oklch(0.88 0.06 20);
+
+  --shadow: 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-raised: 0 8px 28px oklch(0 0 0 / 0.34);
 }

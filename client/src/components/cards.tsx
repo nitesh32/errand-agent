@@ -111,11 +111,11 @@ function OptionsCard({ title, options, current, send, pending }: OptionsCardProp
       <div className="card-actions">
         <span className="mono small muted">{choosingProvider ? 'step 1 / 2' : ''}</span>
         <span className="button-row">
-          <button type="button" className="btn btn-sm" disabled={!enabled} onClick={() => send('no')}>Skip</button>
+          <button type="button" className="btn" disabled={!enabled} onClick={() => send('no')}>Skip</button>
           {choosingProvider && (
-            <button type="button" className="btn btn-sm" disabled={!enabled} onClick={() => send(`What do people say about ${chosen.providerName}?`)}>Reviews</button>
+            <button type="button" className="btn" disabled={!enabled} onClick={() => send(`What do people say about ${chosen.providerName}?`)}>Reviews</button>
           )}
-          <button type="button" className="btn btn-sm btn-primary" disabled={!enabled} onClick={confirmChoice}>Continue</button>
+          <button type="button" className="btn btn-primary" disabled={!enabled} onClick={confirmChoice}>Continue</button>
         </span>
       </div>
     </div>
@@ -142,11 +142,11 @@ function ApprovalCard({ approvalId, action, providerName, slot, price, note, exp
         <dt>Price</dt><dd className="mono strong">{rupees(price)}</dd>
       </dl>
       <div className="card-actions">
-        <span className="mono small muted">{status === 'PENDING' ? 'step 2 / 2 · ' : ''}{approvalId}</span>
+        <span className="mono small muted">{status === 'PENDING' ? 'step 2 / 2' : approvalId}</span>
         {status === 'PENDING' && (
           <span className="button-row">
-            <button type="button" className="btn btn-sm" disabled={pending} onClick={() => send('no')}>Change</button>
-            <button type="button" className="btn btn-sm btn-primary" disabled={pending} onClick={() => send('yes', approvalId)}>{APPROVAL_TEXT[action].button}</button>
+            <button type="button" className="btn" disabled={pending} onClick={() => send('no')}>Change</button>
+            <button type="button" className="btn btn-primary" disabled={pending} onClick={() => send('yes', approvalId)}>{APPROVAL_TEXT[action].button}</button>
           </span>
         )}
       </div>

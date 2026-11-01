@@ -141,8 +141,8 @@ function FactRow({ fact, send, fillComposer }: { fact: Fact } & MemoryActions) {
       <div className="spread">
         <span className="mono small muted">{factNote(fact)}</span>
         <span className="button-row">
-          <button type="button" className="btn btn-sm" onClick={() => fillComposer(`/memory set ${fact.key} `)}>Edit</button>
-          <button type="button" className="btn btn-sm" onClick={() => send(`/memory forget ${fact.key}`)}>Forget</button>
+          <button type="button" className="btn" onClick={() => fillComposer(`/memory set ${fact.key} `)}>Edit</button>
+          <button type="button" className="btn" onClick={() => send(`/memory forget ${fact.key}`)}>Forget</button>
         </span>
       </div>
     </div>
