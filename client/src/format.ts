@@ -1,6 +1,8 @@
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+export const SERVICE_NAMES: Record<string, string> = { plumber: 'Plumber', electrician: 'Electrician', ac_service: 'AC servicing', cleaning: 'Cleaning' };
+
 const parseDate = (date: string) => new Date(`${date}T00:00:00Z`);
 
 /** "2026-11-04T09:00" becomes "Wed 4 Nov · 09:00". */

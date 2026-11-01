@@ -81,7 +81,7 @@ export type Card =
   | { type: 'options'; title: string; options: Option[] }
   | { type: 'approval'; approvalId: string; action: ApprovalAction; providerName: string; slot: string; price: number; note?: string; expiresAt?: string }
   | { type: 'reviews'; providerName: string; reviews: SafeReview[] }
-  | { type: 'bookings'; bookings: Booking[] }
+  | { type: 'bookings' } // the client shows the current list, so an old card cannot go stale
   | { type: 'steps'; steps: Step[] };
 
 export interface Message {

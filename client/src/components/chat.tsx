@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatDateRange, rupees } from '../format.ts';
+import { formatDateRange, rupees, SERVICE_NAMES } from '../format.ts';
 import type { Card, Message, SendMessage, SessionView, Slots, WorkflowState } from '../types.ts';
 import { MessageCard } from './cards.tsx';
 import { Composer } from './composer.tsx';
 import type { ComposerProps } from './composer.tsx';
-
-const SERVICE_NAMES: Record<string, string> = { plumber: 'Plumber', electrician: 'Electrician', ac_service: 'AC servicing', cleaning: 'Cleaning' };
 
 const STATE_LABELS: Record<WorkflowState, { label: string; tone?: string }> = {
   IDLE: { label: 'Ready' },
@@ -27,6 +25,7 @@ const WORKING_WORDS: Partial<Record<WorkflowState, string>> = {
   VERIFYING: 'Checking with the provider',
 };
 
+const BOOKING_LINE = /\(bk_\d+\)$/m;
 const REVEAL_WORD_MS = 55;
 const REVEAL_MAX_MS = 1200;
 
@@ -65,9 +64,12 @@ function StatusBar({ slots, state }: { slots: Slots; state: WorkflowState }) {
 function visibleText({ text, cards }: Message): string[] {
   const optionTitles = cards.flatMap((card) => (card.type === 'options' ? [card.title] : []));
   const hasApproval = cards.some((card) => card.type === 'approval');
+  const hasBookings = cards.some((card) => card.type === 'bookings');
   return text
     .split('\n\n')
-    .filter((part) => !optionTitles.some((title) => part.startsWith(title)) && !(hasApproval && part.endsWith('Reply "yes" to confirm.')));
+    .filter((part) => !optionTitles.some((title) => part.startsWith(title)))
+    .filter((part) => !(hasApproval && part.endsWith('Reply "yes" to confirm.')))
+    .filter((part) => !(hasBookings && BOOKING_LINE.test(part)));
 }
 
 /**
@@ -97,7 +99,7 @@ function MessageView({ message, isNew, isCurrentOptions, session, send, pending 
   if (message.role === 'user') return <div className="user-message">{message.text}</div>;
 
   const renderCards = (cards: Card[]) =>
-    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={session.approvals} />);
+    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={session.approvals} bookings={session.bookings} />);
   // Steps and reviews lead into the text. A choice comes last, so any note explaining it reads first.
   const isChoice = ({ type }: Card) => type === 'options' || type === 'approval';
 

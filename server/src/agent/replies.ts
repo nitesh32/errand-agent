@@ -32,7 +32,7 @@ export async function showBookings(turn: Turn): Promise<void> {
     .sort((a, b) => b.slot.localeCompare(a.slot))
     .map((booking) => `${booking.provider.name}, ${formatSlot(booking.slot)}, ${booking.status} (${booking.id})`);
   say(turn, lines.join('\n') || 'You have no bookings yet.');
-  turn.cards.push({ type: 'bookings', bookings });
+  turn.cards.push({ type: 'bookings' });
   remind(turn);
 }
 

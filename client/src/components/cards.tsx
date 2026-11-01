@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { formatSlot, rupees, slotMessage } from '../format.ts';
 import type { Card, SendMessage, SessionView, Step } from '../types.ts';
+import { BookingsCard } from './bookings-card.tsx';
 import { Glide } from './glide.tsx';
 import { Icon } from './icon.tsx';
 
@@ -11,6 +12,7 @@ export interface CardActions {
   send: SendMessage;
   pending: boolean;
   approvals: SessionView['approvals'];
+  bookings: SessionView['bookings'];
 }
 
 const MAX_TIME_CHIPS = 6;
@@ -186,7 +188,6 @@ function StepRow({ label, detail, status }: Step) {
   );
 }
 
-/** Bookings are reported in the message text and the side panel, so they need no card here. */
 export function MessageCard({ card, current, ...actions }: { card: Card; current: boolean } & CardActions) {
   switch (card.type) {
     case 'options':
@@ -195,9 +196,9 @@ export function MessageCard({ card, current, ...actions }: { card: Card; current
       return <ApprovalCard {...card} {...actions} />;
     case 'reviews':
       return <ReviewsCard {...card} />;
+    case 'bookings':
+      return <BookingsCard bookings={actions.bookings} />;
     case 'steps':
       return <div className="steps">{card.steps.map((step) => <StepRow key={step.label + step.detail} {...step} />)}</div>;
-    default:
-      return null;
   }
 }
