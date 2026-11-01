@@ -80,6 +80,11 @@ button:disabled { cursor: default; }
 @media (hover: hover) { .glide:hover .nav-on { background: transparent; } }
 .nav-recent { display: block; line-height: 32px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sidebar-fold { width: 208px; }
+/* Fixed, so the scrolling list cannot clip it. It fades in once, then swaps text between rows. */
+.chat-tip { display: none; position: fixed; z-index: 20; width: 240px; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-window); background: var(--surface); box-shadow: 0 0 0 1px var(--border-soft), var(--shadow-raised); pointer-events: none; animation: chat-tip-in 120ms ease-out 200ms both; }
+.chat-tip-title { font-size: var(--text-md); line-height: 18px; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+@keyframes chat-tip-in { from { opacity: 0; } }
+@media (min-width: 1101px) and (hover: hover) { .chat-tip { display: flex; } }
 .world-card { margin-top: auto; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-card); color: var(--text-strong-muted); }
 .world-card-active { border-color: var(--warn-border); background: var(--warn-bg); }
 .world-line { display: inline-flex; align-items: center; gap: 6px; }

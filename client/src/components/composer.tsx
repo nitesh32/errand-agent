@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import type { FormEvent, KeyboardEvent, MouseEvent, RefObject } from 'react';
+import { ArrowUp } from 'lucide-react';
 import { Glide } from './glide.tsx';
-import { Icon } from './icon.tsx';
 
 interface MenuItem {
   value: string;
@@ -163,7 +163,7 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
           onBlur={closeMenu}
         />
         <span className="composer-model" title="Model reading your messages">{modelName}</span>
-        <button type="submit" className="composer-send" aria-label="Send" disabled={!canSend}><Icon name="send" size={16} /></button>
+        <button type="submit" className="composer-send" aria-label="Send" disabled={!canSend}><ArrowUp size={16} /></button>
       </div>
     </form>
   );

@@ -1,14 +1,14 @@
+import { CalendarClock, Droplet, Zap } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Composer } from './composer.tsx';
 import type { ComposerProps } from './composer.tsx';
-import { Icon } from './icon.tsx';
-import type { IconName } from './icon.tsx';
 
 const USER_NAME = 'Nitesh';
 
-const SUGGESTIONS: [IconName, string][] = [
-  ['tap', 'Find a plumber for my kitchen tap this week, mornings only, under ₹1,500'],
-  ['move', 'Move my AC servicing to Saturday'],
-  ['bolt', 'Book the same electrician as last time, but not before 10 a.m.'],
+const SUGGESTIONS: [LucideIcon, string][] = [
+  [Droplet, 'Find a plumber for my kitchen tap this week, mornings only, under ₹1,500'],
+  [CalendarClock, 'Move my AC servicing to Saturday'],
+  [Zap, 'Book the same electrician as last time, but not before 10 a.m.'],
 ];
 
 export function Home({ composer }: { composer: ComposerProps }) {
@@ -22,9 +22,9 @@ export function Home({ composer }: { composer: ComposerProps }) {
         <Composer {...composer} />
         <div className="suggestions">
           <span className="label">Try</span>
-          {SUGGESTIONS.map(([icon, text]) => (
+          {SUGGESTIONS.map(([SuggestionIcon, text]) => (
             <button type="button" className="suggestion" key={text} disabled={composer.pending} onClick={() => composer.onSubmit(text)}>
-              <Icon name={icon} size={16} />
+              <SuggestionIcon size={16} />
               {text}
             </button>
           ))}

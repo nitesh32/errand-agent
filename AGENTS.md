@@ -69,6 +69,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Loading states:** never replace the app shell while fetching. `useSession` keeps the previous chat as a placeholder, so chat-specific areas show a skeleton while `isPlaceholderData` is true, and the sidebar, composer and shared panels stay mounted.
 - **Rendering:** keep state as low as it can go. The composer owns its draft, and `MessageView` is the only `memo`.
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
+- **Icons:** import from `lucide-react` directly where they are used, with no wrapper.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
 
 ## How to add things

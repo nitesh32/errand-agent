@@ -44,6 +44,13 @@ export function recentGroup(timestamp: string | null | undefined, now: Date): (t
   return time >= startOfDaysAgo(7) ? 'Previous 7 days' : 'Older';
 }
 
+/** "Oct 1", with the year only when it is not the current one. */
+export function formatChatDate(timestamp: string, now: Date): string {
+  const time = new Date(timestamp);
+  const date = `${MONTHS[time.getMonth()]} ${time.getDate()}`;
+  return time.getFullYear() === now.getFullYear() ? date : `${date}, ${time.getFullYear()}`;
+}
+
 export function factLabel(key: string): string {
   if (key === 'area') return 'Area';
   if (key === 'earliest_time') return 'Earliest time';

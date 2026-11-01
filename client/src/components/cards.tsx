@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
+import { Check, ShieldAlert, TriangleAlert, X } from 'lucide-react';
 import { formatSlot, rupees, slotMessage } from '../format.ts';
 import type { Card, SendMessage, SessionView, Step } from '../types.ts';
 import { BookingsCard } from './bookings-card.tsx';
 import { Glide } from './glide.tsx';
-import { Icon } from './icon.tsx';
 
 type CardOf<T extends Card['type']> = Extract<Card, { type: T }>;
 
@@ -168,7 +168,7 @@ function ReviewsCard({ providerName, reviews }: CardOf<'reviews'>) {
           <p className={review.flagged ? 'review-quote mono' : 'review-text'}>{review.text}</p>
           {review.flagged && (
             <span className="review-source">
-              <Icon name="shield" size={13} />
+              <ShieldAlert size={13} />
               {review.id} · treated as text only · no effect on task, budget or approvals
             </span>
           )}
@@ -178,10 +178,13 @@ function ReviewsCard({ providerName, reviews }: CardOf<'reviews'>) {
   );
 }
 
+const STEP_ICONS = { ok: Check, warn: TriangleAlert, bad: X };
+
 function StepRow({ label, detail, status }: Step) {
+  const StepIcon = STEP_ICONS[status];
   return (
     <div className={`step step-${status}`}>
-      <span className="step-dot"><Icon name={status === 'ok' ? 'check' : 'alert'} size={12} /></span>
+      <span className="step-dot"><StepIcon size={12} /></span>
       <span className="strong">{label}</span>
       <span className="mono small muted step-detail">{detail}</span>
     </div>
