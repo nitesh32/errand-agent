@@ -237,6 +237,10 @@ button:disabled { cursor: default; }
 
 /* The sidebar only collapses when it sits beside the content. */
 @media (min-width: 1101px) {
+  /* The page itself never moves: only the lists inside it scroll, and they stop at their ends. */
+  html, body { overflow: hidden; overscroll-behavior: none; }
+  .sidebar, .sidebar-recent, .home, .messages, .panel-body { overscroll-behavior: contain; }
+  .messages, .panel-body { scrollbar-gutter: stable; }
   .sidebar { transition: width 280ms var(--ease-sidebar); }
   .nav-text { transition: opacity 180ms, translate 180ms; }
   .sidebar-fold { transition: opacity 180ms, visibility 180ms; }
