@@ -11,15 +11,18 @@ interface NavButtonProps {
   onClick: () => void;
   icon: ReactNode;
   label: string;
-  count?: number;
+  /** Small text on the right edge, hidden with the label when collapsed. */
+  aside?: string | number;
+  /** Says what the button does, when the visible label alone does not. */
+  description?: string;
 }
 
-function NavButton({ on, onClick, icon, label, count }: NavButtonProps) {
+function NavButton({ on, onClick, icon, label, aside, description }: NavButtonProps) {
   return (
-    <button type="button" className={on ? 'nav nav-on' : 'nav'} data-glide title={label} onClick={onClick}>
+    <button type="button" className={on ? 'nav nav-on' : 'nav'} data-glide title={description ?? label} aria-label={description} onClick={onClick}>
       {icon}
       <span className="nav-text">{label}</span>
-      {count !== undefined && <span className="mono nav-count nav-text">{count}</span>}
+      {aside !== undefined && <span className="mono nav-aside nav-text">{aside}</span>}
     </button>
   );
 }
@@ -54,8 +57,8 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
 
       <Glide className="nav-group">
         <NavButton on={!session.messages.length} onClick={onNewErrand} icon={<Icon name="plus" />} label="New errand" />
-        <NavButton on={panel === 'bookings'} onClick={() => togglePanel('bookings')} icon={<Icon name="calendar" />} label="My bookings" count={upcoming} />
-        <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Icon name="pin" />} label="Memory" count={session.memory.facts.length} />
+        <NavButton on={panel === 'bookings'} onClick={() => togglePanel('bookings')} icon={<Icon name="calendar" />} label="My bookings" aside={upcoming} />
+        <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Icon name="pin" />} label="Memory" aside={session.memory.facts.length} />
       </Glide>
 
       <div className="sidebar-fold">
@@ -74,15 +77,16 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
         <span className="small muted">No real bookings or payments.</span>
       </div>
 
-      <button
-        type="button"
-        className="theme-button"
-        aria-label={`Switch to ${nextTheme} theme`}
-        title={`Switch to ${nextTheme} theme`}
-        onClick={() => onTheme(nextTheme)}
-      >
-        <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
-      </button>
+      <Glide className="nav-group sidebar-footer">
+        <NavButton
+          on={false}
+          onClick={() => onTheme(nextTheme)}
+          icon={<Icon name={theme === 'dark' ? 'sun' : 'moon'} />}
+          label="Theme"
+          aside={theme === 'dark' ? 'Light' : 'Dark'}
+          description={`Switch to ${nextTheme} theme`}
+        />
+      </Glide>
     </nav>
   );
 }

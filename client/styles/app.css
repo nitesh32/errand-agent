@@ -61,17 +61,16 @@ button:disabled { cursor: default; }
 .brand { display: flex; align-items: center; gap: 6px; padding: 0 2px 0 6px; min-height: 28px; }
 .brand-name { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
 .brand-mark { width: 26px; height: 26px; border-radius: 8px; background: #18181b; color: #ffffff; display: flex; align-items: center; justify-content: center; }
-.theme-button { width: 36px; height: 36px; flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; transition: background-color 150ms, color 150ms, scale 150ms; }
-.theme-button:hover { background: var(--surface-muted); color: var(--text); }
-.theme-button:active { scale: 0.94; }
 .nav-group { display: flex; flex-direction: column; gap: 2px; }
 .nav-text { white-space: nowrap; }
 .collapse-button { width: 28px; height: 28px; flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
 .collapse-button:hover { background: var(--surface-muted); color: var(--text); }
 .nav-label { padding: 0 10px 6px; }
 .nav { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font-size: 13px; color: var(--text-strong-muted); text-align: left; cursor: pointer; }
+.nav svg { flex: none; }
 .nav-on { background: var(--surface-muted); color: var(--text); font-weight: 500; }
-.nav-count { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+.nav-aside { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+.sidebar-footer { flex: none; padding-top: 10px; border-top: 1px solid var(--border); }
 .glide:hover .nav-on { background: transparent; }
 .nav-recent { display: block; line-height: 32px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sidebar-fold { width: 220px; }
