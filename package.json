@@ -1,0 +1,18 @@
+{
+  "name": "errand-agent",
+  "version": "1.0.0",
+  "description": "Chat agent that books, reschedules and cancels home-service errands, with code-enforced approval, idempotent booking, injection-safe tool output, memory and offline evals.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.6" },
+  "scripts": {
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/src/main.ts",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"server/tests/*.test.ts\" && npm run evals",
+    "evals": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/evals/run-evals.ts",
+    "typecheck": "tsc -p server"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}
