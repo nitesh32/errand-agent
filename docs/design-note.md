@@ -24,7 +24,7 @@ An approval is a saved record: action, provider, slot, price, a hash of those fi
 ## Idempotency and recovery
 
 - **Key saved first:** the key and the `EXECUTING` state are written before `book` is called. Keys include the session ID, because the provider's keys are global.
-- **Timeouts:** the agent calls `get_booking_status` before any retry. `booked` finishes the run, `not_found` retries with the same key, and `failed` voids the approval and offers other options.
+- **Timeouts:** the agent calls `get_booking_status` before any retry. `booked` finishes the run, `not_found` retries with the same key, and `failed` voids the approval and offers other options. Success is reported only after a status check confirms it.
 - **New keys:** used only after the provider definitively rejects the old one, such as `hold_expired`.
 - **Repeated "yes":** the approval is already `CONSUMED`, so the agent reports the existing booking and makes no call. Each session handles one message at a time.
 - **Duplicates:** before holding a slot, the agent checks `list_bookings` for the same provider and slot, or the same service and slot.

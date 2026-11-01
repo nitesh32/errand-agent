@@ -75,6 +75,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Cards:** every card fills the chat column and uses the shared `card` shell. The main action is the rightmost button at the bottom-right. Cards respond to the chat's width through a container query, not the screen's.
 - **Traces:** each run keeps its own JSONL file, while `SessionView.trace` holds every run of the session in order. `runId` and the limits in the view are the current run's.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
+- **Design note:** the assignment caps `docs/design-note.md` at two pages, and it is close to that. Trim something when adding to it.
 
 ## How to add things
 
