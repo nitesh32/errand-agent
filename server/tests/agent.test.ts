@@ -61,6 +61,21 @@ test('reading a session mid-turn cannot start a second turn', async () => {
   assert.deepEqual(messages.map((message) => message.role), ['user', 'assistant']);
 });
 
+test('only a message updates the last message time', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'errand-agent-'));
+  const clock = new FakeClock('2026-11-02T03:30:00Z');
+  const agent = new Agent({ store: new FileStore(dir), tracer: new Tracer(join(dir, 'traces'), clock), clock, provider: new MockProvider(clock), model: new RuleModel() });
+
+  assert.equal(agent.createSession('s1').lastMessageAt, null);
+  assert.equal((await agent.getSession('s1')).lastMessageAt, null);
+
+  assert.equal((await agent.handleMessage('s1', 'hello')).lastMessageAt, '2026-11-02T03:30:00.000Z');
+  clock.advance(60_000);
+  assert.equal((await agent.getSession('s1')).lastMessageAt, '2026-11-02T03:30:00.000Z');
+
+  assert.equal((await agent.handleMessage('s1', 'hello again')).lastMessageAt, '2026-11-02T03:31:00.000Z');
+});
+
 test('the view reports what is being asked and each approval outcome', async () => {
   const { agent, provider } = setup();
   provider.release();

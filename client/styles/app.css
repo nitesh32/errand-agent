@@ -65,7 +65,10 @@ button:disabled { cursor: default; }
 .nav-text { white-space: nowrap; }
 .collapse-button { width: 28px; height: 28px; flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
 .collapse-button:hover { background: var(--surface-muted); color: var(--text); }
-.nav-label { padding: 0 10px 6px; }
+.sidebar > :not(.sidebar-recent) { flex: none; }
+.sidebar-recent { flex: 1; min-height: 0; overflow: hidden auto; scrollbar-width: thin; }
+.recent-label { padding: 12px 10px 4px; }
+.glide-highlight + .recent-label { padding-top: 0; }
 .nav { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font-size: 13px; color: var(--text-strong-muted); text-align: left; cursor: pointer; }
 .nav svg { flex: none; }
 .nav-on { background: var(--surface-muted); color: var(--text); font-weight: 500; }
@@ -222,6 +225,7 @@ button:disabled { cursor: default; }
   .app, .workspace { flex-direction: column; }
   .collapse-button { display: none; }
   .sidebar-fold { width: auto; }
+  .sidebar-recent { flex: none; max-height: 200px; }
   .sidebar { flex: none; width: auto; border-right: 0; border-bottom: 1px solid var(--border); }
   .world-card { margin-top: 0; }
   .chat { flex: none; }

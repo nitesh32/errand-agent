@@ -41,6 +41,7 @@ export interface SessionView {
   runId: string;
   slots: Slots;
   messages: Message[];
+  lastMessageAt: string | null;
   trace: TraceEvent[];
   limits: LimitConfig & Session['usage'];
   memory: ReturnType<Memory['list']>;
@@ -149,6 +150,7 @@ export class Agent {
     const userMessage: Message = { id: `m_${++session.messageSeq}`, role: 'user', text: text ?? '', cards: [] };
     if (text !== undefined) {
       session.messages.push(userMessage);
+      session.lastMessageAt = new Date(clock.now()).toISOString();
       tracer.log(session.runId, 'INPUT', { message: userMessage.id, text });
     }
     return {
@@ -380,6 +382,7 @@ export class Agent {
       runId: session.runId,
       slots: session.slots,
       messages: session.messages,
+      lastMessageAt: session.lastMessageAt ?? null,
       trace: tracer.read(session.runId),
       limits: { ...this.limitConfig, ...session.usage },
       memory: new Memory(store, session.userId, clock).list(),

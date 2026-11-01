@@ -64,6 +64,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Server dependencies:** none at runtime. Keep it that way.
 - **API:** three endpoints, all returning one `SessionView`. Slash commands and memory edits are ordinary messages, so they need no new endpoints. Reading a session during a running turn returns saved progress without queueing, which is what makes the trace live.
 - **Reply reveal is presentation only:** the server sends a reply after verification, and the whole text is in the DOM from the start. Do not describe it as real streaming, and do not stream a success claim before it is verified.
+- **Recent chats:** kept in browser storage, ordered only by `lastMessageAt`. Opening a chat must never move it.
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
 

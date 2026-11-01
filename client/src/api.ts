@@ -70,7 +70,7 @@ export function useSendMessage(id: string | null) {
       const previous = queryClient.getQueryData<SessionView>(key);
       if (previous) {
         const draft: Message = { id: 'draft', role: 'user', text, cards: [] };
-        queryClient.setQueryData(key, { ...previous, messages: [...previous.messages, draft] });
+        queryClient.setQueryData(key, { ...previous, messages: [...previous.messages, draft], lastMessageAt: new Date().toISOString() });
       }
       return { previous };
     },

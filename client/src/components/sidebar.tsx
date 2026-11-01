@@ -1,4 +1,6 @@
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
+import { RECENT_GROUPS, recentGroup } from '../format.ts';
 import type { RecentSession } from '../storage.ts';
 import type { Panel, SessionView } from '../types.ts';
 import { Glide } from './glide.tsx';
@@ -44,6 +46,7 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
   const { scenario, seed } = session.world;
   const upcoming = session.bookings.filter((booking) => booking.status === 'upcoming').length;
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
+  const now = new Date();
   const togglePanel = (target: Panel) => onPanel(panel === target ? 'trace' : target);
 
   return (
@@ -61,12 +64,20 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
         <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Icon name="pin" />} label="Memory" aside={session.memory.facts.length} />
       </Glide>
 
-      <div className="sidebar-fold">
-        <span className="label nav-label">Recent</span>
+      <div className="sidebar-fold sidebar-recent">
         <Glide className="nav-group">
-          {recent.map(({ id, title }) => (
-            <button type="button" key={id} data-glide className={id === session.id ? 'nav nav-on nav-recent' : 'nav nav-recent'} title={title} onClick={() => onOpenSession(id)}>{title}</button>
-          ))}
+          {RECENT_GROUPS.map((group) => {
+            const chats = recent.filter((chat) => recentGroup(chat.lastMessageAt, now) === group);
+            if (!chats.length) return null;
+            return (
+              <Fragment key={group}>
+                <span className="label recent-label">{group}</span>
+                {chats.map(({ id, title }) => (
+                  <button type="button" key={id} data-glide className={id === session.id ? 'nav nav-on nav-recent' : 'nav nav-recent'} title={title} onClick={() => onOpenSession(id)}>{title}</button>
+                ))}
+              </Fragment>
+            );
+          })}
         </Glide>
       </div>
 

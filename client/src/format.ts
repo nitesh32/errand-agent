@@ -33,6 +33,19 @@ export function formatTraceTime(timestamp: string): string {
 
 export const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
+export const RECENT_GROUPS = ['Today', 'Yesterday', 'Previous 7 days', 'Older'] as const;
+
+/** Which sidebar group a chat belongs to, by the local day of its last message. */
+export function recentGroup(timestamp: string | null | undefined, now: Date): (typeof RECENT_GROUPS)[number] {
+  if (!timestamp) return 'Older';
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDaysAgo = (days: number) => new Date(startOfToday.getFullYear(), startOfToday.getMonth(), startOfToday.getDate() - days);
+  const time = new Date(timestamp);
+  if (time >= startOfToday) return 'Today';
+  if (time >= startOfDaysAgo(1)) return 'Yesterday';
+  return time >= startOfDaysAgo(7) ? 'Previous 7 days' : 'Older';
+}
+
 export function factLabel(key: string): string {
   if (key === 'area') return 'Area';
   if (key === 'earliest_time') return 'Earliest time';

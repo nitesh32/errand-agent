@@ -119,6 +119,7 @@ export interface Session {
   usage: Usage;
   messageSeq: number;
   messages: Message[];
+  lastMessageAt?: string; // set only by a user message, never by reading the session
 }
 
 export function createSession(id: string, userId: string): Session {

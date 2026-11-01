@@ -32,6 +32,13 @@ export function App() {
   const live = pending ? liveQuery.data : undefined;
 
   function newErrand() {
+    // An untouched chat is already a new errand, so there is nothing to create.
+    if (session && !session.messages.length) {
+      setPanel('trace');
+      setDraft('');
+      inputRef.current?.focus();
+      return;
+    }
     createSession.mutate(undefined, {
       onSuccess: ({ id }) => {
         sendMessage.reset();
