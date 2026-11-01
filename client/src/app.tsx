@@ -93,7 +93,7 @@ export function App() {
     return <div className="loading">{sessionQuery.error && !needsSession ? `Can't reach the server: ${sessionQuery.error.message}` : 'Loading…'}</div>;
   }
 
-  const composer = { draft, onDraft: setDraft, onSubmit: send, pending, inputRef, scenarios: session.world.scenarios };
+  const composer = { draft, onDraft: setDraft, onSubmit: send, pending, inputRef, scenarios: session.world.scenarios, modelName: session.model };
   // During a turn the panel shows live progress. Messages stay with the main query.
   const panelSession = live ? { ...session, state: live.state, trace: live.trace, runId: live.runId, limits: live.limits } : session;
   const isHome = !session.messages.length && panel === 'trace';
@@ -114,7 +114,7 @@ export function App() {
         onOpenSession={openSession}
       />
       {isHome ? (
-        <Home composer={composer} modelName={session.model} />
+        <Home composer={composer} />
       ) : (
         <main className="workspace">
           <Chat key={session.id} session={session} liveState={live?.state ?? session.state} error={error} composer={composer} />

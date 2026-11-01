@@ -5,8 +5,8 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const SERVICE_NAMES: Record<string, string> = { plumber: 'Plumber', electrician: 'Electrician', ac_service: 'AC servicing', cleaning: 'Cleaning' };
 
-/** A chat is named after its first user message. */
-export const chatTitle = (messages: Message[]) => messages.find((message) => message.role === 'user')?.text;
+/** A chat is named after its first real message. Slash commands do not name a chat. */
+export const chatTitle = (messages: Message[]) => messages.find(({ role, text }) => role === 'user' && !text.startsWith('/'))?.text;
 
 const parseDate = (date: string) => new Date(`${date}T00:00:00Z`);
 

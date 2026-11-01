@@ -25,7 +25,6 @@ button:disabled { cursor: default; }
 .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--primary-text); }
 .btn-primary:hover:not(:disabled) { background: var(--primary); filter: brightness(1.08); }
 .btn-sm { min-height: 28px; padding: 0 12px; font-size: 12px; }
-.btn-icon { width: 34px; padding: 0; flex: none; }
 
 .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); font-size: 12px; color: var(--text-strong-muted); white-space: nowrap; }
 .chip-warn { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn); }
@@ -111,13 +110,23 @@ button:disabled { cursor: default; }
 
 /* Composer */
 .composer-wrap { padding: 14px 24px 20px; }
-.composer { position: relative; max-width: 760px; margin: 0 auto; padding: 10px 10px 10px 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); }
-.composer-large { width: 100%; max-width: none; padding: 12px 12px 12px 18px; border-radius: 20px; }
-.composer-row { display: flex; align-items: center; gap: 8px; }
-.composer-input { flex: 1; min-width: 0; max-height: 120px; padding: 7px 0; border: 0; outline: none; resize: none; background: transparent; color: var(--text); font: 15px/20px var(--font); }
-.command-menu { position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); z-index: 2; animation: pop-in 180ms var(--ease-out) both; transform-origin: bottom center; display: flex; flex-direction: column; gap: 1px; padding: 6px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); box-shadow: 0 4px 16px rgba(24, 24, 27, 0.1); }
-.composer-large .command-menu { position: relative; left: auto; right: auto; bottom: auto; margin: -6px -6px 8px -12px; border-width: 0 0 1px; border-radius: 0; box-shadow: none; }
-.command { width: 100%; display: grid; grid-template-columns: minmax(110px, max-content) minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; font-size: 13px; text-align: left; cursor: pointer; }
+.composer { position: relative; width: 100%; max-width: 760px; margin: 0 auto; padding: 6px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); transition: border-color 150ms; }
+.composer:focus-within { border-color: var(--text-muted); }
+.composer-row { display: flex; align-items: flex-end; gap: 4px; }
+.composer-input { flex: 1; min-width: 0; min-height: 28px; max-height: 100px; padding: 4px; border: 0; outline: none; resize: none; background: transparent; color: var(--text); font: 14px/20px var(--font); overflow-wrap: anywhere; }
+.composer-input::placeholder { color: var(--text-muted); }
+.composer-ghost, .composer-send { width: 28px; height: 28px; flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 8px; cursor: pointer; transition: background-color 200ms, color 200ms, scale 150ms; }
+.composer-ghost { background: transparent; color: var(--text-muted); font-size: 14px; }
+.composer-ghost:hover, .composer-ghost[aria-expanded='true'] { background: var(--surface-muted); color: var(--text); }
+.composer-model { flex: none; align-self: flex-end; padding: 0 6px; font-size: 12px; font-weight: 500; line-height: 28px; color: var(--text-muted); }
+.composer-send { background: var(--text); color: var(--surface); }
+.composer-send:disabled { background: var(--border); color: var(--text-muted); }
+.composer-ghost:active, .composer-send:active:not(:disabled) { scale: 0.94; }
+.command-menu { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 2; padding: 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: 0 8px 24px rgba(24, 24, 27, 0.12); animation: pop-in 180ms var(--ease-out) both; transform-origin: bottom center; }
+.command-menu .glide-highlight { left: 4px; right: 4px; border-radius: 6px; }
+.command { width: 100%; height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; font-size: 12.5px; text-align: left; cursor: pointer; }
+.command-name { flex: none; font-weight: 500; }
+.command-hint { margin-top: 4px; padding: 6px 8px 4px; border-top: 1px solid var(--border-soft); font-size: 11px; color: var(--text-muted); }
 
 /* Cards */
 .card { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }

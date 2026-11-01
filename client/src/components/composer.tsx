@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
-import type { FormEvent, KeyboardEvent, RefObject } from 'react';
+import type { FormEvent, KeyboardEvent, MouseEvent, RefObject } from 'react';
 import { Glide } from './glide.tsx';
 import { Icon } from './icon.tsx';
 
@@ -12,10 +12,10 @@ interface MenuItem {
 }
 
 const COMMANDS: MenuItem[] = [
-  { value: '/scenario', label: '/scenario', description: 'Force a mock failure: timeout_but_booked, price_change…', complete: false },
-  { value: '/memory', label: '/memory', description: 'View, correct or forget saved preferences', complete: true },
-  { value: '/bookings', label: '/bookings', description: 'List upcoming and past bookings', complete: true },
-  { value: '/restart', label: '/restart', description: 'Kill the agent at the next book call and recover', complete: true },
+  { value: '/scenario', label: '/scenario', description: 'Force a mock failure', complete: false },
+  { value: '/memory', label: '/memory', description: 'View saved preferences', complete: true },
+  { value: '/bookings', label: '/bookings', description: 'List your bookings', complete: true },
+  { value: '/restart', label: '/restart', description: 'Kill the agent at the next book call', complete: true },
 ];
 
 const SCENARIO_PREFIX = '/scenario ';
@@ -30,6 +30,9 @@ function menuItems(draft: string, scenarios: string[]): MenuItem[] {
   return draft.startsWith('/') && !draft.includes(' ') ? COMMANDS.filter(({ value }) => value.startsWith(draft)) : [];
 }
 
+/** Keeps focus in the input when a menu control is clicked, so the menu does not close first. */
+const keepFocus = (event: MouseEvent) => event.preventDefault();
+
 export interface ComposerProps {
   draft: string;
   onDraft: (text: string) => void;
@@ -37,13 +40,17 @@ export interface ComposerProps {
   pending: boolean;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   scenarios: string[];
-  modelName?: string; // shown on the larger home composer
+  modelName: string;
 }
 
 export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenarios, modelName }: ComposerProps) {
   const [active, setActive] = useState(0);
   const [dismissed, setDismissed] = useState(false);
-  const items = dismissed ? [] : menuItems(draft, scenarios);
+  // Opened by the / button. Typing then filters commands without needing to type the slash.
+  const [commandsOpen, setCommandsOpen] = useState(false);
+  const query = commandsOpen && !draft.startsWith('/') ? `/${draft}` : draft;
+  const items = dismissed ? [] : menuItems(query, scenarios);
+  const canSend = Boolean(draft.trim()) && !pending;
 
   useEffect(() => {
     setActive(0);
@@ -56,16 +63,34 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
     if (!input) return;
     input.style.height = 'auto';
     input.style.height = `${input.scrollHeight}px`;
+    input.style.overflowY = input.scrollHeight > input.clientHeight ? 'auto' : 'hidden';
   }, [draft, inputRef]);
 
+  function closeMenu() {
+    setDismissed(true);
+    setCommandsOpen(false);
+  }
+
   function send() {
-    const text = draft.trim();
-    if (text && !pending) onSubmit(text);
+    if (!canSend) return;
+    setCommandsOpen(false);
+    onSubmit(draft.trim());
   }
 
   function pick({ value, complete }: MenuItem) {
-    if (complete) onSubmit(value);
-    else onDraft(`${value} `);
+    setCommandsOpen(false);
+    if (!complete) onDraft(`${value} `);
+    else if (!pending) onSubmit(value);
+    inputRef.current?.focus();
+  }
+
+  function toggleCommands() {
+    if (items.length) {
+      closeMenu();
+    } else {
+      setDismissed(false);
+      setCommandsOpen(true);
+    }
     inputRef.current?.focus();
   }
 
@@ -75,7 +100,7 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
       event.preventDefault();
       setActive((current) => (current + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length);
     } else if (items.length && event.key === 'Escape') {
-      setDismissed(true);
+      closeMenu();
     } else if (items.length && (event.key === 'Tab' || (event.key === 'Enter' && !event.shiftKey))) {
       event.preventDefault();
       pick(items[Math.min(active, items.length - 1)]);
@@ -91,33 +116,36 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
   }
 
   return (
-    <form className={modelName ? 'composer composer-large' : 'composer'} onSubmit={submit}>
+    <form className="composer" onSubmit={submit}>
       {items.length > 0 && (
         <Glide className="command-menu" activeIndex={Math.min(active, items.length - 1)}>
           {items.map((item, index) => (
-            <button type="button" className="command" data-glide key={item.value} onMouseEnter={() => setActive(index)} onClick={() => pick(item)}>
-              <span className="mono">{item.label}</span>
+            <button type="button" className="command" data-glide key={item.value} onMouseDown={keepFocus} onMouseEnter={() => setActive(index)} onClick={() => pick(item)}>
+              <span className="command-name">{item.label}</span>
               <span className="muted">{item.description}</span>
             </button>
           ))}
+          <div className="command-hint">Type to search {draft.startsWith(SCENARIO_PREFIX) ? 'scenarios' : 'commands'}</div>
         </Glide>
       )}
       <label htmlFor="message" className="visually-hidden">Message</label>
       <div className="composer-row">
+        <button type="button" className="composer-ghost mono" aria-label="Commands" aria-expanded={items.length > 0} title="Commands" onMouseDown={keepFocus} onClick={toggleCommands}>/</button>
         <textarea
           id="message"
           ref={inputRef}
           className="composer-input"
-          placeholder="Reply, or type / for commands"
+          placeholder="Write a message…"
           autoComplete="off"
           rows={1}
           value={draft}
-          disabled={pending}
           onChange={(event) => onDraft(event.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setDismissed(false)}
+          onBlur={closeMenu}
         />
-        {modelName && <span className="chip"><span className="dot dot-ok" />{modelName}</span>}
-        <button type="submit" className="btn btn-primary btn-icon" aria-label="Send" disabled={pending}><Icon name="send" /></button>
+        <span className="composer-model" title="Model reading your messages">{modelName}</span>
+        <button type="submit" className="composer-send" aria-label="Send" disabled={!canSend}><Icon name="send" size={16} /></button>
       </div>
     </form>
   );

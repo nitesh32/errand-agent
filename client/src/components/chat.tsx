@@ -98,7 +98,7 @@ interface ChatProps {
   session: SessionView;
   liveState: WorkflowState;
   error: string | null;
-  composer: Omit<ComposerProps, 'modelName'>;
+  composer: ComposerProps;
 }
 
 export function Chat({ session, liveState, error, composer }: ChatProps) {

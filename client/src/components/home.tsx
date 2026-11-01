@@ -11,7 +11,7 @@ const SUGGESTIONS: [IconName, string][] = [
   ['bolt', 'Book the same electrician as last time, but not before 10 a.m.'],
 ];
 
-export function Home({ composer, modelName }: { composer: Omit<ComposerProps, 'modelName'>; modelName: string }) {
+export function Home({ composer }: { composer: ComposerProps }) {
   return (
     <main className="home">
       <div className="home-column">
@@ -19,7 +19,7 @@ export function Home({ composer, modelName }: { composer: Omit<ComposerProps, 'm
           <h1>Hello {USER_NAME}</h1>
           <p className="muted">What should I book, move or cancel?</p>
         </div>
-        <Composer {...composer} modelName={modelName} />
+        <Composer {...composer} />
         <div className="suggestions">
           <span className="label">Try</span>
           {SUGGESTIONS.map(([icon, text]) => (
