@@ -66,6 +66,8 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Reply reveal is presentation only:** the server sends a reply after verification, and the whole text is in the DOM from the start. Do not describe it as real streaming, and do not stream a success claim before it is verified.
 - **Recent chats:** kept in browser storage, ordered only by `lastMessageAt`. Opening a chat must never move it.
 - **Design tokens:** colours, radii, font sizes and shared heights live only in `client/styles/theme.css`, based on the Beautiful UI foundation. `app.css` must not contain raw colours or radii. Use the type scale and the 28px control height rather than hand-tuning a component.
+- **Loading states:** never replace the app shell while fetching. `useSession` keeps the previous chat as a placeholder, so chat-specific areas show a skeleton while `isPlaceholderData` is true, and the sidebar, composer and shared panels stay mounted.
+- **Rendering:** keep state as low as it can go. The composer owns its draft, and `MessageView` is the only `memo`.
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
 

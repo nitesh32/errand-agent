@@ -108,6 +108,12 @@ button:disabled { cursor: default; }
 @keyframes pulse { 50% { opacity: 0.35; } }
 .fade-up { animation: fade-up 350ms var(--ease-out) both; }
 .reveal-word { display: inline-block; animation: reveal-word 320ms var(--ease-out) both; }
+
+/* Skeletons wait before fading in, so a fast response never flashes one. */
+@keyframes skeleton-in { from { opacity: 0; } }
+@keyframes skeleton-shimmer { to { background-position: -200% 0; } }
+.skeleton { flex: none; max-width: 100%; border-radius: var(--radius-chip); background: linear-gradient(90deg, var(--surface-muted) 25%, var(--border-soft) 50%, var(--surface-muted) 75%) 0 0 / 200% 100%; animation: skeleton-in 200ms ease-out 150ms both, skeleton-shimmer 1.4s linear infinite; }
+.skeleton-right { align-self: flex-end; border-radius: var(--radius-window); }
 .dot-live { background: var(--primary); animation: pulse 1.2s ease-in-out infinite; }
 .error-banner { padding: 8px 12px; border: 1px solid var(--bad-border); border-radius: var(--radius-card); background: var(--bad-bg); color: var(--bad); font-size: var(--text-md); }
 
@@ -185,7 +191,6 @@ button:disabled { cursor: default; }
 .bookings-table tr:last-child td { border-bottom: 0; }
 .bookings-table th.align-right, .align-right { text-align: right; }
 .nowrap { white-space: nowrap; }
-.booking-row { animation: fade-up 240ms var(--ease-out) both; }
 
 .steps { display: flex; flex-direction: column; gap: 6px; max-width: 480px; }
 .step { display: flex; align-items: center; gap: 8px; min-height: var(--row-height); padding: 6px 12px 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); box-shadow: var(--shadow); font-size: var(--text-md); }

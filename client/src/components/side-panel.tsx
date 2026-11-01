@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { factLabel, formatSlot, formatTraceTime, rupees } from '../format.ts';
 import type { Fact, Panel, SendMessage, SessionView, TraceEvent, WorkflowState } from '../types.ts';
+import { TraceSkeleton } from './skeleton.tsx';
 
 const STATE_LABELS: Record<WorkflowState, { label: string; tone?: string }> = {
   IDLE: { label: 'Ready' },
@@ -208,14 +209,16 @@ function BookingsPanel({ session: { bookings } }: { session: SessionView }) {
 interface SidePanelProps extends MemoryActions {
   panel: Panel;
   session: SessionView;
+  /** The trace belongs to one chat, so it waits. Memory and bookings are shared, so they stay. */
+  loading: boolean;
   lastTurnMs: number;
   live: boolean;
 }
 
-export function SidePanel({ panel, session, lastTurnMs, live, send, fillComposer }: SidePanelProps) {
+export function SidePanel({ panel, session, loading, lastTurnMs, live, send, fillComposer }: SidePanelProps) {
   return (
     <aside className="side-panel" aria-label={panel}>
-      {panel === 'trace' && <TracePanel session={session} lastTurnMs={lastTurnMs} live={live} />}
+      {panel === 'trace' && (loading ? <TraceSkeleton /> : <TracePanel session={session} lastTurnMs={lastTurnMs} live={live} />)}
       {panel === 'memory' && <MemoryPanel session={session} send={send} fillComposer={fillComposer} />}
       {panel === 'bookings' && <BookingsPanel session={session} />}
     </aside>

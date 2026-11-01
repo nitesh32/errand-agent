@@ -5,9 +5,9 @@ import { App } from './app.tsx';
 import '../styles/theme.css';
 import '../styles/app.css';
 
-// The server is local and its state only changes through this client, so no background refetching.
+// Refetching happens when a chat opens. Focus changes alone never change the server's state.
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false, staleTime: Infinity } },
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 });
 
 createRoot(document.getElementById('root')!).render(

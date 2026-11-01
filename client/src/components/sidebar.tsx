@@ -31,6 +31,9 @@ function NavButton({ on, onClick, icon, label, aside, description }: NavButtonPr
 
 interface SidebarProps {
   session: SessionView;
+  /** The selected chat. It can differ from `session` while that chat is loading. */
+  activeId: string | null;
+  isEmptyChat: boolean;
   panel: Panel;
   recent: RecentSession[];
   theme: Theme;
@@ -42,7 +45,7 @@ interface SidebarProps {
   onOpenSession: (id: string) => void;
 }
 
-export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, onTheme, onPanel, onNewErrand, onOpenSession }: SidebarProps) {
+export function Sidebar({ session, activeId, isEmptyChat, panel, recent, theme, collapsed, onCollapse, onTheme, onPanel, onNewErrand, onOpenSession }: SidebarProps) {
   const { scenario, seed } = session.world;
   const upcoming = session.bookings.filter((booking) => booking.status === 'upcoming').length;
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -59,7 +62,7 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
       </div>
 
       <Glide className="nav-group">
-        <NavButton on={!session.messages.length} onClick={onNewErrand} icon={<Icon name="plus" />} label="New errand" />
+        <NavButton on={isEmptyChat} onClick={onNewErrand} icon={<Icon name="plus" />} label="New errand" />
         <NavButton on={panel === 'bookings'} onClick={() => togglePanel('bookings')} icon={<Icon name="calendar" />} label="My bookings" aside={upcoming} />
         <NavButton on={panel === 'memory'} onClick={() => togglePanel('memory')} icon={<Icon name="pin" />} label="Memory" aside={session.memory.facts.length} />
       </Glide>
@@ -73,7 +76,7 @@ export function Sidebar({ session, panel, recent, theme, collapsed, onCollapse, 
               <Fragment key={group}>
                 <span className="label recent-label">{group}</span>
                 {chats.map(({ id, title }) => (
-                  <button type="button" key={id} data-glide className={id === session.id ? 'nav nav-on nav-recent' : 'nav nav-recent'} title={title} onClick={() => onOpenSession(id)}>{title}</button>
+                  <button type="button" key={id} data-glide className={id === activeId ? 'nav nav-on nav-recent' : 'nav nav-recent'} title={title} onClick={() => onOpenSession(id)}>{title}</button>
                 ))}
               </Fragment>
             );

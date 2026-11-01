@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { chatTitle } from '../format.ts';
 import type { Card, Message, SendMessage, SessionView, WorkflowState } from '../types.ts';
 import { MessageCard } from './cards.tsx';
 import { Composer } from './composer.tsx';
 import type { ComposerProps } from './composer.tsx';
+import { ChatSkeleton } from './skeleton.tsx';
 
 const WORKING_WORDS: Partial<Record<WorkflowState, string>> = {
   SEARCHING: 'Searching providers',
@@ -52,18 +53,20 @@ interface MessageViewProps {
   message: Message;
   isNew: boolean;
   isCurrentOptions: boolean;
-  session: SessionView;
+  approvals: SessionView['approvals'];
+  bookings: SessionView['bookings'];
   send: SendMessage;
   pending: boolean;
 }
 
-function MessageView({ message, isNew, isCurrentOptions, session, send, pending }: MessageViewProps) {
+/** Memoised, so live polling during a turn does not re-render every past message. */
+const MessageView = memo(function MessageView({ message, isNew, isCurrentOptions, approvals, bookings, send, pending }: MessageViewProps) {
   // Decided once, so a later render or a reload never replays the reveal.
   const [animate] = useState(isNew);
   if (message.role === 'user') return <div className="user-message">{message.text}</div>;
 
   const renderCards = (cards: Card[]) =>
-    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={session.approvals} bookings={session.bookings} />);
+    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={approvals} bookings={bookings} />);
   // Steps and reviews lead into the text. A choice comes last, so any note explaining it reads first.
   const isChoice = ({ type }: Card) => type === 'options' || type === 'approval';
 
@@ -76,7 +79,7 @@ function MessageView({ message, isNew, isCurrentOptions, session, send, pending 
       {renderCards(message.cards.filter(isChoice))}
     </div>
   );
-}
+});
 
 function Working({ state }: { state: WorkflowState }) {
   const [startedAt] = useState(() => performance.now());
@@ -94,22 +97,30 @@ function Working({ state }: { state: WorkflowState }) {
   );
 }
 
-interface ChatProps {
+interface ThreadProps {
   session: SessionView;
   liveState: WorkflowState;
   error: string | null;
-  composer: ComposerProps;
+  send: SendMessage;
+  pending: boolean;
 }
 
-export function Chat({ session, liveState, error, composer }: ChatProps) {
+/** One chat's title and messages. Keyed by chat, so its scroll and reveal state start fresh. */
+function Thread({ session, liveState, error, send, pending }: ThreadProps) {
   const { messages } = session;
-  const { pending, onSubmit: send } = composer;
   const scroller = useRef<HTMLDivElement>(null);
   const seenCount = useRef(messages.length);
+  const opened = useRef(false);
+
+  // Opening a chat lands at the bottom before the first paint, with no visible slide.
+  useLayoutEffect(() => {
+    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
+  }, []);
 
   useEffect(() => {
     seenCount.current = messages.length;
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
+    if (opened.current) scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
+    opened.current = true;
   }, [messages.length, pending]);
 
   const lastOptionsIndex = messages.findLastIndex((message) => message.cards.some((card) => card.type === 'options'));
@@ -117,7 +128,7 @@ export function Chat({ session, liveState, error, composer }: ChatProps) {
   const title = chatTitle(messages) ?? 'New errand';
 
   return (
-    <section className="chat">
+    <>
       <header className="chat-header">
         <h1 className="chat-title" title={title}>{title}</h1>
       </header>
@@ -129,7 +140,8 @@ export function Chat({ session, liveState, error, composer }: ChatProps) {
               message={message}
               isNew={index >= seenCount.current}
               isCurrentOptions={index === lastOptionsIndex && session.state === 'PRESENTING'}
-              session={session}
+              approvals={session.approvals}
+              bookings={session.bookings}
               send={send}
               pending={pending}
             />
@@ -145,7 +157,27 @@ export function Chat({ session, liveState, error, composer }: ChatProps) {
           {error && <div className="error-banner" role="alert">{error}</div>}
         </div>
       </div>
-      <div className="composer-wrap"><Composer {...composer} /></div>
+    </>
+  );
+}
+
+interface ChatProps {
+  /** The selected chat. A new chat gets a new composer, so a draft does not leak across chats. */
+  composerKey: string | null;
+  session: SessionView;
+  loading: boolean;
+  liveState: WorkflowState;
+  error: string | null;
+  composer: ComposerProps;
+}
+
+export function Chat({ composerKey, session, loading, liveState, error, composer }: ChatProps) {
+  return (
+    <section className="chat">
+      {loading
+        ? <ChatSkeleton />
+        : <Thread key={session.id} session={session} liveState={liveState} error={error} send={composer.onSubmit} pending={composer.pending} />}
+      <div className="composer-wrap"><Composer key={composerKey} {...composer} /></div>
     </section>
   );
 }

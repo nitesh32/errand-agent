@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Message, SessionView } from './types.ts';
 
 export class ApiError extends Error {
@@ -21,11 +21,17 @@ const LIVE_POLL_MS = 400;
 
 const sessionKey = (id: string | null) => ['session', id] as const;
 
+/**
+ * Opening a chat keeps the previous one as a placeholder, so the app shell never unmounts.
+ * Callers show a skeleton for chat-specific areas while `isPlaceholderData` is true.
+ * Bookings and memory are shared across chats, so a cached chat refetches silently on open.
+ */
 export function useSession(id: string | null) {
   return useQuery<SessionView, ApiError>({
     queryKey: sessionKey(id),
     queryFn: () => request(`/sessions/${id}`),
     enabled: Boolean(id),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -44,7 +50,6 @@ export function useLiveSession(id: string | null, turn: number, enabled: boolean
     queryFn: () => request(`/sessions/${id}`),
     enabled,
     refetchInterval: enabled ? LIVE_POLL_MS : false,
-    staleTime: 0,
     gcTime: 0,
   });
 }

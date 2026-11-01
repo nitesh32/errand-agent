@@ -34,16 +34,19 @@ function menuItems(draft: string, scenarios: string[]): MenuItem[] {
 const keepFocus = (event: MouseEvent) => event.preventDefault();
 
 export interface ComposerProps {
-  draft: string;
-  onDraft: (text: string) => void;
   onSubmit: (text: string) => void;
   pending: boolean;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   scenarios: string[];
   modelName: string;
+  /** Text to place in the input, such as a memory edit. */
+  prefill: string | null;
+  onPrefillUsed: () => void;
 }
 
-export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenarios, modelName }: ComposerProps) {
+/** Owns its draft, so typing re-renders only the composer. */
+export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, prefill, onPrefillUsed }: ComposerProps) {
+  const [draft, setDraft] = useState('');
   const [active, setActive] = useState(0);
   const [dismissed, setDismissed] = useState(false);
   // Opened by the / button. Typing then filters commands without needing to type the slash.
@@ -56,6 +59,13 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
     setActive(0);
     setDismissed(false);
   }, [draft]);
+
+  useEffect(() => {
+    if (prefill === null) return;
+    setDraft(prefill);
+    onPrefillUsed();
+    inputRef.current?.focus();
+  }, [prefill, onPrefillUsed, inputRef]);
 
   // Grows with the text. CSS max-height caps it, then it scrolls.
   useLayoutEffect(() => {
@@ -74,13 +84,17 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
   function send() {
     if (!canSend) return;
     setCommandsOpen(false);
+    setDraft('');
     onSubmit(draft.trim());
   }
 
   function pick({ value, complete }: MenuItem) {
     setCommandsOpen(false);
-    if (!complete) onDraft(`${value} `);
-    else if (!pending) onSubmit(value);
+    if (!complete) setDraft(`${value} `);
+    else if (!pending) {
+      setDraft('');
+      onSubmit(value);
+    }
     inputRef.current?.focus();
   }
 
@@ -139,7 +153,7 @@ export function Composer({ draft, onDraft, onSubmit, pending, inputRef, scenario
           autoComplete="off"
           rows={1}
           value={draft}
-          onChange={(event) => onDraft(event.target.value)}
+          onChange={(event) => setDraft(event.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setDismissed(false)}
           onBlur={closeMenu}
