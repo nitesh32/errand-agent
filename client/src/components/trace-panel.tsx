@@ -165,7 +165,10 @@ export function TracePanel({ session: { runId, state, trace, limits }, lastTurnM
               </button>
             ))}
           </div>
-          <button type="button" className="btn" aria-pressed={showRaw} onClick={() => setShowRaw(!showRaw)}>{showRaw ? 'Events' : 'Raw'}</button>
+          <div className="filter-chips trace-view" role="group" aria-label="Trace view">
+            <button type="button" className="filter-chip" aria-pressed={!showRaw} onClick={() => setShowRaw(false)}>Events</button>
+            <button type="button" className="filter-chip" aria-pressed={showRaw} onClick={() => setShowRaw(true)}>Raw</button>
+          </div>
         </div>
       )}
       <div className="panel-body" ref={body}>

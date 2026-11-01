@@ -233,7 +233,7 @@ button:disabled { cursor: default; }
 .trace-tools { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .trace-tools .filter-chips { margin: 0; border-radius: var(--radius-card); }
 .trace-tools .filter-chips:empty { visibility: hidden; }
-.trace-tools .btn { flex: none; }
+.trace-tools .trace-view { flex: none; flex-wrap: nowrap; border-radius: var(--radius-pill); }
 .trace-tools .filter-chip { padding: 0 8px; }
 .trace-turn { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border-bottom: 1px solid var(--border-soft); background: var(--surface-muted); font-size: var(--text-sm); font-weight: 500; letter-spacing: inherit; }
 .trace-turn .label { flex: none; }
