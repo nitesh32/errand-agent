@@ -52,9 +52,9 @@ export class Limits {
     this.usage.toolCalls++;
   }
 
-  /** Refuses to start a side effect that could not be verified afterwards. */
-  requireToolCalls(count: number): void {
-    if (this.toolCallsLeft() < count) throw new LimitExceeded('tool calls');
+  /** A side effect only starts if there is budget left to verify it afterwards. */
+  hasToolCalls(count: number): boolean {
+    return this.toolCallsLeft() >= count;
   }
 
   /** A small fixed allowance per turn, so an in-flight booking can always be checked. */

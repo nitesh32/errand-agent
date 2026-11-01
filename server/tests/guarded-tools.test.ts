@@ -121,11 +121,11 @@ test('the model cap stops further calls, and usage is shared with the saved sess
   assert.equal(usage.modelCalls, 1);
 });
 
-test('requireToolCalls refuses a side effect that could not be verified', () => {
+test('hasToolCalls reports whether a side effect could be verified', () => {
   const limits = new Limits({ ...DEFAULT_LIMITS, maxToolCalls: 1 }, { modelCalls: 0, toolCalls: 0 }, new FakeClock('2026-11-02T03:30:00Z'));
-  assert.throws(() => limits.requireToolCalls(2), LimitExceeded);
+  assert.equal(limits.hasToolCalls(2), false);
   limits.allowRecovery(1);
-  assert.doesNotThrow(() => limits.requireToolCalls(2));
+  assert.equal(limits.hasToolCalls(2), true);
 });
 
 test('reviews are flagged for callers, and their text stays out of traces', async () => {

@@ -11,7 +11,7 @@ export interface MockConfig {
   bookOutcomes: BookOutcome[]; // consumed first, then the 70/15/15 draw
   quoteDeltas: number[]; // consumed per hold, added to the search price
   unavailableSlots: string[]; // hold_slot returns slot_unavailable
-  conflictSlots: string[]; // reschedule returns slot_conflict
+  conflictSlots: string[]; // reschedule returns slot_conflict; '*' means every slot
   latencyMs: Record<string, number>; // per tool
   failingTools: string[]; // these tools throw an unknown error
 }
@@ -43,6 +43,17 @@ export interface MockState {
   takenSlots: string[];
   effects: EffectRecord[];
 }
+
+/** Named failures the demo can force with /scenario. Each replaces whatever was forced before. */
+export const SCENARIOS: Record<string, Partial<MockConfig>> = {
+  default: {},
+  review_injection: {}, // the hostile reviews are always in the catalog
+  timeout_but_booked: { bookOutcomes: ['timeout_booked'] },
+  timeout_not_booked: { bookOutcomes: ['timeout_lost'] },
+  slot_taken: { bookOutcomes: ['slot_taken'] },
+  price_change: { quoteDeltas: [200] },
+  slot_conflict: { conflictSlots: ['*'] },
+};
 
 const HOLD_MS = 10 * 60 * 1000;
 const TIMEOUT_MS = 5000;
@@ -96,10 +107,15 @@ export class MockProvider {
     };
   }
 
-  /** Changes forced behaviour on a running world, for /scenario. */
+  /** Changes forced behaviour on a running world. */
   configure(changes: Partial<MockConfig>): void {
     Object.assign(this.state.config, changes);
     this.onChange(this.state);
+  }
+
+  /** Clears anything previously forced, then applies one named scenario. */
+  applyScenario(name: string): void {
+    this.configure({ bookOutcomes: [], quoteDeltas: [], conflictSlots: [], ...SCENARIOS[name] });
   }
 
   async search_providers(service: string, _area: string, date_range: DateRange): Promise<Provider[]> {
@@ -218,7 +234,8 @@ export class MockProvider {
     const booking = this.state.bookings.find((item) => item.id === booking_id);
     if (!booking) return { ok: false, error: 'booking_not_found' };
     if (!this.state.keys[idempotency_key]) {
-      if (this.state.config.conflictSlots.includes(new_slot)) return { ok: false, error: 'slot_conflict' };
+      const { conflictSlots } = this.state.config;
+      if (conflictSlots.includes(new_slot) || conflictSlots.includes('*')) return { ok: false, error: 'slot_conflict' };
       this.state.effects.push({
         tool: 'reschedule',
         key: idempotency_key,

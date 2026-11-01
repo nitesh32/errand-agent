@@ -1,0 +1,32 @@
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"INPUT","message":"m_1","text":"Find a plumber for my kitchen tap this week, mornings only, under ₹1,500."}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"MODEL","model":"scripted","latencyMs":0,"usage":null}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"MODEL","proposal":{"intent":"book","slots":{"dateFrom":"2026-11-02","dateTo":"2026-11-08","latest":"12:00","service":"plumber","budget":1500,"notes":"kitchen tap"}}}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"STATE","from":"IDLE","to":"COLLECTING","why":"new book errand"}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"REPLY","text":"Which area are you in?","state":"COLLECTING"}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"INPUT","message":"m_3","text":"Powai"}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"MODEL","model":"scripted","latencyMs":0,"usage":null}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"MODEL","proposal":{"intent":"provide","slots":{"area":"Powai"}}}
+{"ts":"2026-11-02T03:30:00.000Z","runId":"run_eval_1","type":"STATE","from":"COLLECTING","to":"SEARCHING","why":"all required details known"}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"TOOL","tool":"search_providers","args":{"service":"plumber","area":"Powai","date_range":{"from":"2026-11-02","to":"2026-11-08"}},"result":{"count":5},"latencyMs":20}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"STATE","filtered":"5 to 4"}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"STATE","from":"SEARCHING","to":"PRESENTING","why":"4 options"}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"REPLY","text":"Here's who fits, best rated first:\n1. Ramesh Plumbing, ★4.8, Mon 2 Nov 10:00, ₹1,200\n2. AquaFix Services, ★4.6, Mon 2 Nov 11:00, ₹1,350\n3. TapRight, ★4.4, Mon 2 Nov 11:00, ₹1,450\n4. QuickPipe, ★4.3, Mon 2 Nov 11:00, ₹1,100\nReply with a number to choose.","state":"PRESENTING"}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"INPUT","message":"m_5","text":"1"}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"MODEL","model":"scripted","latencyMs":0,"usage":null}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"MODEL","proposal":{"intent":"select","slots":{},"selection":{"index":1}}}
+{"ts":"2026-11-02T03:30:00.020Z","runId":"run_eval_1","type":"INPUT","selected":"prv_ramesh","slot":"2026-11-02T10:00"}
+{"ts":"2026-11-02T03:30:00.040Z","runId":"run_eval_1","type":"TOOL","tool":"list_bookings","args":{"user_id":"u_demo"},"result":{"count":5},"latencyMs":20}
+{"ts":"2026-11-02T03:30:00.040Z","runId":"run_eval_1","type":"STATE","from":"PRESENTING","to":"HOLDING","why":"prv_ramesh 2026-11-02T10:00"}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"TOOL","tool":"hold_slot","args":{"provider_id":"prv_ramesh","slot":"2026-11-02T10:00"},"result":{"ok":true,"hold_id":"hold_1000","expires_at":"2026-11-02T03:40:00.060Z","quoted_price":1200},"latencyMs":20}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"STATE","from":"HOLDING","to":"AWAITING_APPROVAL","why":"book needs confirmation"}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"APPR","approval":"apr_1_1","status":"PENDING","fingerprint":"7c6a52243233","terms":{"action":"book","providerId":"prv_ramesh","slot":"2026-11-02T10:00","price":1200}}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"REPLY","text":"Book Ramesh Plumbing, Mon 2 Nov 10:00, ₹1,200? Reply \"yes\" to confirm.","state":"AWAITING_APPROVAL"}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"INPUT","message":"m_7","text":"yes"}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"APPR","approval":"apr_1_1","status":"GRANTED","message":"m_7"}
+{"ts":"2026-11-02T03:30:00.060Z","runId":"run_eval_1","type":"STATE","from":"AWAITING_APPROVAL","to":"EXECUTING","why":"idempotency key saved before the call"}
+{"ts":"2026-11-02T03:30:05.080Z","runId":"run_eval_1","type":"TOOL","tool":"book","args":{"hold_id":"hold_1000","idempotency_key":"idem_apr_1_1_1"},"result":{"ok":false,"error":"timeout"},"latencyMs":5020}
+{"ts":"2026-11-02T03:30:05.080Z","runId":"run_eval_1","type":"STATE","from":"EXECUTING","to":"VERIFYING","why":"timeout, no retry before status check"}
+{"ts":"2026-11-02T03:30:05.100Z","runId":"run_eval_1","type":"TOOL","tool":"get_booking_status","args":{"idempotency_key":"idem_apr_1_1_1"},"result":{"status":"booked","booking_id":"bk_1001"},"latencyMs":20}
+{"ts":"2026-11-02T03:30:05.100Z","runId":"run_eval_1","type":"APPR","approval":"apr_1_1","status":"CONSUMED"}
+{"ts":"2026-11-02T03:30:05.100Z","runId":"run_eval_1","type":"STATE","from":"VERIFYING","to":"DONE","why":"status check confirmed the booking"}
+{"ts":"2026-11-02T03:30:05.100Z","runId":"run_eval_1","type":"REPLY","text":"Booked: Ramesh Plumbing, Mon 2 Nov 10:00, ₹1,200 (bk_1001).\n\nThe provider timed out, so I checked the booking status before telling you. It had gone through, and there's no duplicate.","state":"DONE"}
