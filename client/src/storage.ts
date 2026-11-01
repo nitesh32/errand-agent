@@ -1,3 +1,4 @@
+import { chatTitle } from './format.ts';
 import type { SessionView } from './types.ts';
 
 // Browser storage holds conveniences only, so failing to reach it must not break the page.
@@ -36,7 +37,7 @@ const newestFirst = (a: RecentSession, b: RecentSession) => (b.lastMessageAt ?? 
  */
 export function rememberSession({ id, messages, lastMessageAt }: SessionView): RecentSession[] {
   const recent = readRecent();
-  const title = messages.find((message) => message.role === 'user')?.text;
+  const title = chatTitle(messages);
   if (!title) return recent;
   const existing = recent.find((item) => item.id === id);
   const entry = { id, title, lastMessageAt: lastMessageAt ?? existing?.lastMessageAt };

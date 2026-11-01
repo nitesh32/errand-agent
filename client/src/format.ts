@@ -1,7 +1,12 @@
+import type { Message } from './types.ts';
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const SERVICE_NAMES: Record<string, string> = { plumber: 'Plumber', electrician: 'Electrician', ac_service: 'AC servicing', cleaning: 'Cleaning' };
+
+/** A chat is named after its first user message. */
+export const chatTitle = (messages: Message[]) => messages.find((message) => message.role === 'user')?.text;
 
 const parseDate = (date: string) => new Date(`${date}T00:00:00Z`);
 
@@ -17,13 +22,6 @@ export function slotMessage(index: number, slot: string): string {
   const [date, time] = slot.split('T');
   const value = parseDate(date);
   return `${index} on ${value.getUTCDate()} ${MONTHS[value.getUTCMonth()]} at ${time}`;
-}
-
-export function formatDateRange({ from, to }: { from: string; to: string }): string {
-  const start = parseDate(from);
-  const end = parseDate(to);
-  const startDay = `${start.getUTCDate()} ${MONTHS[start.getUTCMonth()]}`;
-  return from === to ? startDay : `${startDay} – ${end.getUTCDate()} ${MONTHS[end.getUTCMonth()]}`;
 }
 
 /** Local time with milliseconds, matching what the rest of the page shows. */

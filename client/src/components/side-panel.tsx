@@ -1,6 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { factLabel, formatSlot, formatTraceTime, rupees } from '../format.ts';
-import type { Fact, Panel, SendMessage, SessionView, TraceEvent } from '../types.ts';
+import type { Fact, Panel, SendMessage, SessionView, TraceEvent, WorkflowState } from '../types.ts';
+
+const STATE_LABELS: Record<WorkflowState, { label: string; tone?: string }> = {
+  IDLE: { label: 'Ready' },
+  COLLECTING: { label: 'Collecting' },
+  SEARCHING: { label: 'Searching' },
+  PRESENTING: { label: 'Presenting options' },
+  HOLDING: { label: 'Holding slot' },
+  AWAITING_APPROVAL: { label: 'Awaiting approval', tone: 'chip-warn' },
+  EXECUTING: { label: 'Executing', tone: 'chip-warn' },
+  VERIFYING: { label: 'Verifying', tone: 'chip-warn' },
+  DONE: { label: 'Done · verified', tone: 'chip-ok' },
+  FAILED: { label: 'Stopped', tone: 'chip-bad' },
+};
 
 const TAG_CLASS: Record<TraceEvent['type'], string> = {
   STATE: 'tag-state',
@@ -69,8 +82,9 @@ function Meter({ label, value, limit, display }: { label: string; value: number;
   );
 }
 
-function TracePanel({ session: { runId, trace, limits }, lastTurnMs, live }: { session: SessionView; lastTurnMs: number; live: boolean }) {
+function TracePanel({ session: { runId, state, trace, limits }, lastTurnMs, live }: { session: SessionView; lastTurnMs: number; live: boolean }) {
   const injections = trace.filter((event) => event.flaggedReview).length;
+  const { label, tone = '' } = STATE_LABELS[state];
   const body = useRef<HTMLDivElement>(null);
 
   // The newest event is what matters while watching a run.
@@ -85,6 +99,7 @@ function TracePanel({ session: { runId, trace, limits }, lastTurnMs, live }: { s
         <span className="button-row">
           {injections > 0 && <span className="chip chip-bad">{injections} injection ignored</span>}
           {live && <span className="chip"><span className="dot dot-live" />live</span>}
+          <span className={`chip status-chip ${tone}`}>{label}</span>
         </span>
       </div>
       <div className="meters">

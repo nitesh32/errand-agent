@@ -95,7 +95,7 @@ export function App() {
 
   const composer = { draft, onDraft: setDraft, onSubmit: send, pending, inputRef, scenarios: session.world.scenarios };
   // During a turn the panel shows live progress. Messages stay with the main query.
-  const panelSession = live ? { ...session, trace: live.trace, runId: live.runId, limits: live.limits } : session;
+  const panelSession = live ? { ...session, state: live.state, trace: live.trace, runId: live.runId, limits: live.limits } : session;
   const isHome = !session.messages.length && panel === 'trace';
   const error = sendMessage.error && `${sendMessage.error.message}. Please try again.`;
 

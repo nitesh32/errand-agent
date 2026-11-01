@@ -1,22 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatDateRange, rupees, SERVICE_NAMES } from '../format.ts';
-import type { Card, Message, SendMessage, SessionView, Slots, WorkflowState } from '../types.ts';
+import { chatTitle } from '../format.ts';
+import type { Card, Message, SendMessage, SessionView, WorkflowState } from '../types.ts';
 import { MessageCard } from './cards.tsx';
 import { Composer } from './composer.tsx';
 import type { ComposerProps } from './composer.tsx';
-
-const STATE_LABELS: Record<WorkflowState, { label: string; tone?: string }> = {
-  IDLE: { label: 'Ready' },
-  COLLECTING: { label: 'Collecting' },
-  SEARCHING: { label: 'Searching' },
-  PRESENTING: { label: 'Presenting options' },
-  HOLDING: { label: 'Holding slot' },
-  AWAITING_APPROVAL: { label: 'Awaiting approval', tone: 'chip-warn' },
-  EXECUTING: { label: 'Executing', tone: 'chip-warn' },
-  VERIFYING: { label: 'Verifying', tone: 'chip-warn' },
-  DONE: { label: 'Done · verified', tone: 'chip-ok' },
-  FAILED: { label: 'Stopped', tone: 'chip-bad' },
-};
 
 const WORKING_WORDS: Partial<Record<WorkflowState, string>> = {
   SEARCHING: 'Searching providers',
@@ -35,29 +22,6 @@ function quickReplies({ awaiting, state }: SessionView): string[] {
   if (awaiting === 'budget') return ['No limit'];
   if (awaiting === 'dateRange') return ['This week', 'Saturday'];
   return state === 'DONE' ? ['Show my bookings'] : [];
-}
-
-function timeWindow({ earliest, latest }: Slots): string {
-  return [earliest && `from ${earliest.value}`, latest && `before ${latest.value}`].filter(Boolean).join(' ');
-}
-
-function StatusBar({ slots, state }: { slots: Slots; state: WorkflowState }) {
-  const when = [slots.dateRange && formatDateRange(slots.dateRange.value), timeWindow(slots)].filter(Boolean).join(' · ');
-  const { label, tone = '' } = STATE_LABELS[state];
-  return (
-    <div className="status-bar">
-      {slots.service && <span className="chip">{SERVICE_NAMES[slots.service.value] ?? slots.service.value}</span>}
-      {slots.area && (
-        <span className="chip">
-          {slots.area.value}
-          {slots.area.source === 'memory' && <span className="mono chip-source">memory</span>}
-        </span>
-      )}
-      {when && <span className="chip">{when}</span>}
-      {slots.budget && <span className="chip">{slots.budget.value === null ? 'No limit' : `≤ ${rupees(slots.budget.value)}`}</span>}
-      <span className={`chip status-chip ${tone}`}>{label}</span>
-    </div>
-  );
 }
 
 /** Text that a card already shows is left out, so nothing appears twice. */
@@ -150,10 +114,13 @@ export function Chat({ session, liveState, error, composer }: ChatProps) {
 
   const lastOptionsIndex = messages.findLastIndex((message) => message.cards.some((card) => card.type === 'options'));
   const replies = pending ? [] : quickReplies(session);
+  const title = chatTitle(messages) ?? 'New errand';
 
   return (
     <section className="chat">
-      <StatusBar slots={session.slots} state={liveState} />
+      <header className="chat-header">
+        <h1 className="chat-title" title={title}>{title}</h1>
+      </header>
       <div className="messages" ref={scroller} aria-live="polite">
         <div className="messages-column">
           {messages.map((message, index) => (

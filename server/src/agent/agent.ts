@@ -20,7 +20,7 @@ import { advance, answerPendingFact, applyCorrection, mergeSlots, startErrand } 
 import { runCommand } from './commands.ts';
 import { applyMemory, findOption, remind, showBookings, showReviews } from './replies.ts';
 import { createSession, currentApproval, formatSlot, say, trace, voidPending } from './session.ts';
-import type { Message, Session, SlotName, Slots, Turn, WorkflowState } from './session.ts';
+import type { Message, Session, SlotName, Turn, WorkflowState } from './session.ts';
 import { isAtRest, isInFlight, transition } from './state-machine.ts';
 
 export interface AgentOptions {
@@ -39,7 +39,6 @@ export interface SessionView {
   id: string;
   state: WorkflowState;
   runId: string;
-  slots: Slots;
   messages: Message[];
   lastMessageAt: string | null;
   trace: TraceEvent[];
@@ -380,7 +379,6 @@ export class Agent {
       id: session.id,
       state: session.state,
       runId: session.runId,
-      slots: session.slots,
       messages: session.messages,
       lastMessageAt: session.lastMessageAt ?? null,
       trace: tracer.read(session.runId),
