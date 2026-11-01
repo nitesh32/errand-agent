@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Check, ShieldAlert, TriangleAlert, X } from 'lucide-react';
+import { Check, ChevronRight, ShieldAlert, TriangleAlert, X } from 'lucide-react';
 import { formatSlot, rupees, slotMessage } from '../format.ts';
 import type { Card, SendMessage, SessionView, Step } from '../types.ts';
 import { BookingsCard } from './bookings-card.tsx';
@@ -86,7 +86,7 @@ function OptionsCard({ title, options, current, send, pending }: OptionsCardProp
   if (!current) {
     return (
       <details className="card card-past">
-        <summary className="card-title">{title} <span className="muted small">{options.length} options</span></summary>
+        <summary className="card-title"><ChevronRight className="card-chevron" size={14} />{title} <span className="muted small">{options.length} options</span></summary>
         <Glide>{rows}</Glide>
       </details>
     );

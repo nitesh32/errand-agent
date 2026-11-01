@@ -38,14 +38,13 @@ export interface ComposerProps {
   pending: boolean;
   inputRef: RefObject<HTMLTextAreaElement | null>;
   scenarios: string[];
-  modelName: string;
   /** Text to place in the input, such as a memory edit. */
   prefill: string | null;
   onPrefillUsed: () => void;
 }
 
 /** Owns its draft, so typing re-renders only the composer. */
-export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, prefill, onPrefillUsed }: ComposerProps) {
+export function Composer({ onSubmit, pending, inputRef, scenarios, prefill, onPrefillUsed }: ComposerProps) {
   const [draft, setDraft] = useState('');
   // The highlighted row. Null until a row is hovered or an arrow key is used.
   const [active, setActive] = useState<number | null>(null);
@@ -151,7 +150,6 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
           onFocus={reopenMenu}
           onBlur={() => setMenu('closed')}
         />
-        <span className="composer-model" title="Model reading your messages">{modelName}</span>
         <button type="submit" className="composer-send" aria-label="Send" disabled={!canSend}><ArrowUp size={16} /></button>
       </div>
     </form>

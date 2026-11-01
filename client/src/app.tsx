@@ -98,7 +98,6 @@ export function App() {
     pending: pending || loadingChat,
     inputRef,
     scenarios: session.world.scenarios,
-    modelName: session.model,
     prefill,
     onPrefillUsed: () => setPrefill(null),
   };

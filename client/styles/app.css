@@ -134,7 +134,6 @@ button:disabled { cursor: default; }
 .composer-ghost, .composer-send { width: var(--control-height); height: var(--control-height); flex: none; display: flex; align-items: center; justify-content: center; border: 0; border-radius: var(--radius-control); cursor: pointer; transition: background-color 150ms, color 150ms, transform 150ms; }
 .composer-ghost { background: transparent; color: var(--text-muted); font-size: var(--text-base); }
 .composer-ghost:hover, .composer-ghost[aria-expanded='true'] { background: var(--surface-subtle); color: var(--text); }
-.composer-model { flex: 0 1 auto; min-width: 0; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: flex-end; padding: 0 6px; font-size: var(--text-sm); font-weight: 500; line-height: var(--control-height); color: var(--text-muted); }
 .composer-send { background: var(--text); color: var(--surface); transition-duration: 200ms; }
 .composer-send:disabled { background: var(--border); color: var(--text-muted); }
 .composer-ghost:active, .composer-send:active:not(:disabled) { transform: scale(0.94); }
@@ -162,7 +161,10 @@ button:disabled { cursor: default; }
 .card-input::placeholder { color: var(--text-muted); }
 .card-input:focus { border-color: var(--text-muted); border-style: solid; }
 .card-past { gap: 0; padding: 8px 12px; box-shadow: none; }
-.card-past summary { cursor: pointer; color: var(--text-muted); }
+.card-past summary { display: flex; align-items: center; gap: 6px; list-style: none; cursor: pointer; color: var(--text-muted); }
+.card-past summary::-webkit-details-marker { display: none; }
+.card-chevron { flex: none; transition: rotate 150ms var(--ease-out); }
+.card-past[open] .card-chevron { rotate: 90deg; }
 .card-past[open] summary { margin-bottom: 6px; }
 .card-void { opacity: 0.72; }
 .card-void .facts dd { text-decoration: line-through; }
@@ -263,7 +265,6 @@ html, body { overflow: hidden; overscroll-behavior: none; }
   .option { min-height: 44px; }
   .time-chip, .filter-chip { min-height: 32px; }
   .composer-ghost, .composer-send { width: 36px; height: 36px; }
-  .composer-model { line-height: 36px; }
   /* iPhone Safari zooms the page when focusing a smaller input. */
   .composer-input, .card-input { font-size: var(--text-lg); }
 }
@@ -292,7 +293,6 @@ html, body { overflow: hidden; overscroll-behavior: none; }
 }
 
 @media (max-width: 640px) {
-  .composer-model { display: none; }
   .home { padding: 24px 16px; }
   .panel-header { flex-wrap: wrap; }
   .panel-header .button-row { flex: 0 1 auto; flex-wrap: wrap; }
