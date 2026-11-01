@@ -54,7 +54,8 @@ These rules are graded. Do not weaken them, even to make something easier:
 | `server/evals/` | Harness with a scripted model, scenarios, invariants, table generator |
 | `client/src/api.ts` | All API calls, as TanStack Query hooks |
 | `client/src/types.ts` | API types, imported type-only from the server so they cannot drift |
-| `client/src/components/` | React components. `glide.tsx` is the one shared hover highlight, so do not add per-row hover backgrounds inside it. Colours and easing are tokens in `client/styles/theme.css` |
+| `client/src/viewport.ts` | Screen-width checks matching the media queries in `app.css`, and which panel shows by default |
+| `client/src/components/` | React components. `glide.tsx` is the one shared hover highlight, so do not add per-row hover backgrounds inside it. `trace-panel.tsx` holds the trace, and `side-panel.tsx` holds the other panels and the resize handle. Colours and easing are tokens in `client/styles/theme.css` |
 
 ## Conventions
 
@@ -70,6 +71,9 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Rendering:** keep state as low as it can go. The composer owns its draft, and `MessageView` is the only `memo`.
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
 - **Icons:** import from `lucide-react` directly where they are used, with no wrapper.
+- **Layout:** the app is one fixed screen at every width, and only inner lists scroll. Below 1100px the sidebar is a rail with a drawer. At 760px and below, panels open over the chat.
+- **Cards:** every card fills the chat column and uses the shared `card` shell. The main action is the rightmost button at the bottom-right. Cards respond to the chat's width through a container query, not the screen's.
+- **Traces:** each run keeps its own JSONL file, while `SessionView.trace` holds every run of the session in order. `runId` and the limits in the view are the current run's.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
 
 ## How to add things
@@ -84,6 +88,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **All green is not proof.** Break the code on purpose and confirm an eval fails. Run this on a scratch copy, never in place.
 - **Evals use a fixed Monday and the rule model.** Bugs that depend on the real date, or on using several sessions together, have got past them before. Check real behaviour by running the app in a browser.
 - **Look at the screenshots.** A green browser run still missed a highlight stuck on the first row, which was obvious on screen.
+- **Restart after server changes.** `npm start` does not reload server code, so a running server can show new client code with old server behaviour.
 - **The mock is deliberately naive.** It lets a slot be double-booked, so an agent bug shows up in the bookings list. Do not make it stricter.
 
 ## Status
@@ -92,16 +97,18 @@ Done: the server, evals and client. All eight must-haves are implemented. No nic
 
 Remaining deliverables:
 
-- `docs/bugs.md`: three real bugs, each with what broke, why, the fix and its regression test. Use only bugs that really happened. Candidates:
+- `docs/bugs.md`: three real bugs, each with what broke, why, the fix and its regression test. Use only bugs that really happened. The owner is reviewing the bugs first, so do not write this until asked. Candidates:
   - Idempotency keys collided across sessions, so a second booking returned the first one and reported false success. Guarded by the "Two sessions book two errands" scenario.
   - "No limit" was read as rejecting a pending fact, which forgot the area. Guarded by the "No limit is not a no" scenario.
   - "This week" on a Sunday meant only the rest of today. Guarded by a test in `rule-model.test.ts`.
   - Scenarios worked only once, because a shared array was consumed. Guarded by a test in `mock-provider.test.ts`.
-- `docs/design-note.md`: add the annotated excerpt of `docs/traces/timeout-after-success.jsonl`, and keep it to two pages.
-- `docs/demo-script.md`: a script for the owner's 3 to 5 minute recording. Only the owner can record it.
-- `README.md`: remove the "in progress" status line.
+  - A new run hid the earlier runs from the trace panel. Guarded by a test in `agent.test.ts`.
+- The 3 to 5 minute demo recording, showing chat and trace side by side. Only the owner can record it, and no script is wanted for now.
 
 Known limits:
 
 - `OpenRouterModel` has never made a live call, because no key was available.
 - The wall-clock cap is checked between calls. A hung call is cut off by its own timeout instead.
+- Client behaviour has no tests in the repo, including the 800ms Confirm guard. It has only been checked with browser scripts outside the repo.
+- Shrinking a desktop window without reloading can leave the drawer open and a panel over the chat. A reload fixes it.
+- `cards.tsx`, `chat.tsx`, `sidebar.tsx` and `side-panel.tsx` each hold several components. Splitting them is an optional clean-up the owner has not yet taken up.
