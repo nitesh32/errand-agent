@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Agent, SimulatedCrash } from '../src/agent/agent.ts';
 import type { SessionView } from '../src/agent/agent.ts';
+import { runIds } from '../src/agent/session.ts';
 import type { Session } from '../src/agent/session.ts';
 import { FakeClock } from '../src/infra/clock.ts';
 import { FileStore } from '../src/infra/file-store.ts';
@@ -145,7 +146,7 @@ export class Harness {
   /** Every trace event across every run, in order per run. */
   fullTrace() {
     return this.sessions().flatMap((session) =>
-      Array.from({ length: session.runSeq + 1 }, (_, run) => this.tracer.read(`run_${session.id}_${run}`)).flat(),
+      runIds(session).flatMap((run) => this.tracer.read(run)),
     );
   }
 }

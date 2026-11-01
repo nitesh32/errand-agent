@@ -19,7 +19,7 @@ import { selectForChange } from './change-flow.ts';
 import { advance, answerPendingFact, applyCorrection, mergeSlots, startErrand } from './collect-flow.ts';
 import { runCommand } from './commands.ts';
 import { applyMemory, findOption, remind, showBookings, showReviews } from './replies.ts';
-import { createSession, currentApproval, formatSlot, say, trace, voidPending } from './session.ts';
+import { createSession, currentApproval, formatSlot, say, trace, voidPending, runIds } from './session.ts';
 import type { Message, Session, SlotName, Turn, WorkflowState } from './session.ts';
 import { isAtRest, isInFlight, transition } from './state-machine.ts';
 
@@ -381,7 +381,7 @@ export class Agent {
       runId: session.runId,
       messages: session.messages,
       lastMessageAt: session.lastMessageAt ?? null,
-      trace: tracer.read(session.runId),
+      trace: runIds(session).flatMap((run) => tracer.read(run)),
       limits: { ...this.limitConfig, ...session.usage },
       memory: new Memory(store, session.userId, clock).list(),
       bookings: provider.state.bookings,

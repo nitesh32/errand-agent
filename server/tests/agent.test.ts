@@ -90,3 +90,16 @@ test('the view reports what is being asked and each approval outcome', async () 
   assert.deepEqual(declined.approvals.map((item) => item.status), ['VOID']);
   assert.ok(declined.world.scenarios.includes('timeout_but_booked'));
 });
+
+test('a new run keeps the earlier runs of the session in its trace', async () => {
+  const { agent, provider } = setup();
+  provider.release();
+  await agent.handleMessage('s1', 'Find a plumber in Powai this week under 2000');
+  await agent.handleMessage('s1', '1');
+  assert.equal((await agent.handleMessage('s1', 'yes')).state, 'DONE');
+  const view = await agent.handleMessage('s1', 'Show my bookings');
+
+  assert.equal(view.runId, 'run_s1_2');
+  assert.ok(view.trace.some((event) => event.runId === 'run_s1_1' && event.tool === 'search_providers'));
+  assert.ok(view.trace.some((event) => event.runId === 'run_s1_2'));
+});

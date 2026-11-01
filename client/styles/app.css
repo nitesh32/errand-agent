@@ -225,7 +225,27 @@ button:disabled { cursor: default; }
 .meter-fill { height: 3px; border-radius: var(--radius-pill); background: var(--primary); }
 .trace-row { display: grid; grid-template-columns: 80px 50px minmax(0, 1fr) 44px; gap: 8px; align-items: start; padding: 8px 12px; border-bottom: 1px solid var(--border-soft); font-size: var(--text-sm); line-height: 18px; }
 .trace-time, .trace-detail, .trace-latency { font-size: var(--text-xs); color: var(--text-muted); }
-.trace-detail { overflow-wrap: anywhere; }
+.trace-tools { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.trace-tools .filter-chips { margin: 0; border-radius: var(--radius-card); }
+.trace-tools .filter-chips:empty { visibility: hidden; }
+.trace-tools .btn { flex: none; }
+.trace-tools .filter-chip { padding: 0 8px; }
+.trace-turn { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 12px; border-bottom: 1px solid var(--border-soft); background: var(--surface-muted); font-size: var(--text-sm); font-weight: 500; letter-spacing: inherit; }
+.trace-turn .label { flex: none; }
+.trace-turn-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trace-turn-run { flex: none; font-size: var(--text-xs); font-weight: 400; color: var(--text-muted); }
+.trace-event summary { list-style: none; cursor: pointer; transition: background-color 150ms; }
+.trace-event summary::-webkit-details-marker { display: none; }
+.trace-event summary:hover { background: var(--surface-subtle); }
+.trace-main, .trace-title, .trace-preview { display: block; min-width: 0; }
+.trace-title { display: flex; align-items: flex-start; gap: 4px; overflow-wrap: anywhere; }
+.trace-title svg { flex: none; margin-top: 3px; }
+.trace-preview { overflow: hidden; padding-left: 16px; text-overflow: ellipsis; white-space: nowrap; }
+.trace-event[open] .trace-preview { display: none; }
+.trace-event[open] .card-chevron { rotate: 90deg; }
+.trace-body, .trace-raw { margin: 0; font-size: var(--text-xs); line-height: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.trace-body { margin: 0 12px 8px; padding: 8px; border-radius: var(--radius-control); background: var(--surface-muted); color: var(--text-strong-muted); }
+.trace-raw { padding: 12px; color: var(--text-strong-muted); }
 .trace-latency { text-align: right; }
 .trace-appr { background: var(--warn-bg); }
 .trace-guard, .trace-limit, .trace-error { background: var(--bad-bg); }

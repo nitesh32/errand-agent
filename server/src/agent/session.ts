@@ -122,6 +122,9 @@ export interface Session {
   lastMessageAt?: string; // set only by a user message, never by reading the session
 }
 
+/** Every run of a session so far. Each keeps its own trace file. */
+export const runIds = ({ id, runSeq }: Pick<Session, 'id' | 'runSeq'>) => Array.from({ length: runSeq + 1 }, (_, run) => `run_${id}_${run}`);
+
 export function createSession(id: string, userId: string): Session {
   return {
     id,
