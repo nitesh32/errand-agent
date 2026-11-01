@@ -47,20 +47,19 @@ export interface ComposerProps {
 /** Owns its draft, so typing re-renders only the composer. */
 export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, prefill, onPrefillUsed }: ComposerProps) {
   const [draft, setDraft] = useState('');
-  const [active, setActive] = useState(0);
-  // The highlight appears only once a row is hovered or an arrow key is used.
-  const [engaged, setEngaged] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  // Opened by the / button. Typing then filters commands without needing to type the slash.
-  const [commandsOpen, setCommandsOpen] = useState(false);
-  const query = commandsOpen && !draft.startsWith('/') ? `/${draft}` : draft;
-  const items = dismissed ? [] : menuItems(query, scenarios);
+  // The highlighted row. Null until a row is hovered or an arrow key is used.
+  const [active, setActive] = useState<number | null>(null);
+  // 'open' comes from the / button: typing then filters commands without needing to type the slash.
+  const [menu, setMenu] = useState<'auto' | 'open' | 'closed'>('auto');
+  const query = menu === 'open' && !draft.startsWith('/') ? `/${draft}` : draft;
+  const items = menu === 'closed' ? [] : menuItems(query, scenarios);
   const canSend = Boolean(draft.trim()) && !pending;
 
+  const reopenMenu = () => setMenu((current) => (current === 'closed' ? 'auto' : current));
+
   useEffect(() => {
-    setActive(0);
-    setEngaged(false);
-    setDismissed(false);
+    setActive(null);
+    reopenMenu();
   }, [draft]);
 
   useEffect(() => {
@@ -79,20 +78,15 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
     input.style.overflowY = input.scrollHeight > input.clientHeight ? 'auto' : 'hidden';
   }, [draft, inputRef]);
 
-  function closeMenu() {
-    setDismissed(true);
-    setCommandsOpen(false);
-  }
-
   function send() {
     if (!canSend) return;
-    setCommandsOpen(false);
+    setMenu('auto');
     setDraft('');
     onSubmit(draft.trim());
   }
 
   function pick({ value, complete }: MenuItem) {
-    setCommandsOpen(false);
+    setMenu('auto');
     if (!complete) setDraft(`${value} `);
     else if (!pending) {
       setDraft('');
@@ -102,12 +96,7 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
   }
 
   function toggleCommands() {
-    if (items.length) {
-      closeMenu();
-    } else {
-      setDismissed(false);
-      setCommandsOpen(true);
-    }
+    setMenu(items.length ? 'closed' : 'open');
     inputRef.current?.focus();
   }
 
@@ -115,13 +104,13 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
     if (event.nativeEvent.isComposing) return;
     if (items.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
       event.preventDefault();
-      setEngaged(true);
-      setActive((current) => (current + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length);
+      const down = event.key === 'ArrowDown';
+      setActive((current) => ((current ?? (down ? -1 : 0)) + (down ? 1 : items.length - 1)) % items.length);
     } else if (items.length && event.key === 'Escape') {
-      closeMenu();
+      setMenu('closed');
     } else if (items.length && (event.key === 'Tab' || (event.key === 'Enter' && !event.shiftKey))) {
       event.preventDefault();
-      pick(items[Math.min(active, items.length - 1)]);
+      pick(items[active ?? 0]);
     } else if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       send();
@@ -136,9 +125,9 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
   return (
     <form className="composer" onSubmit={submit}>
       {items.length > 0 && (
-        <Glide className="command-menu" activeIndex={engaged ? Math.min(active, items.length - 1) : undefined} onMouseLeave={() => setEngaged(false)}>
+        <Glide className="command-menu" activeIndex={active ?? undefined} onMouseLeave={() => setActive(null)}>
           {items.map((item, index) => (
-            <button type="button" className="command" data-glide key={item.value} onMouseDown={keepFocus} onMouseEnter={() => { setActive(index); setEngaged(true); }} onClick={() => pick(item)}>
+            <button type="button" className="command" data-glide key={item.value} onMouseDown={keepFocus} onMouseEnter={() => setActive(index)} onClick={() => pick(item)}>
               <span className="command-name">{item.label}</span>
               <span className="muted">{item.description}</span>
             </button>
@@ -159,8 +148,8 @@ export function Composer({ onSubmit, pending, inputRef, scenarios, modelName, pr
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => setDismissed(false)}
-          onBlur={closeMenu}
+          onFocus={reopenMenu}
+          onBlur={() => setMenu('closed')}
         />
         <span className="composer-model" title="Model reading your messages">{modelName}</span>
         <button type="submit" className="composer-send" aria-label="Send" disabled={!canSend}><ArrowUp size={16} /></button>

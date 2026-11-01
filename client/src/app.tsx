@@ -4,13 +4,11 @@ import { Chat } from './components/chat.tsx';
 import { Home } from './components/home.tsx';
 import { SidePanel } from './components/side-panel.tsx';
 import { Sidebar } from './components/sidebar.tsx';
-import type { Theme } from './components/sidebar.tsx';
 import { AppSkeleton } from './components/skeleton.tsx';
 import { readRecent, readStorage, rememberSession, writeStorage } from './storage.ts';
 import type { RecentSession } from './storage.ts';
 import type { Panel, SendMessage } from './types.ts';
 
-const THEME_KEY = 'errand.theme';
 const SIDEBAR_KEY = 'errand.sidebarCollapsed';
 
 export function App() {
@@ -19,9 +17,7 @@ export function App() {
   const [prefill, setPrefill] = useState<string | null>(null);
   const [lastTurnMs, setLastTurnMs] = useState(0);
   const [recent, setRecent] = useState<RecentSession[]>(readRecent);
-  const [theme, setTheme] = useState<Theme>(() => readStorage<Theme>(THEME_KEY, 'light'));
   const [collapsed, setCollapsed] = useState(() => readStorage(SIDEBAR_KEY, false));
-  const [turn, setTurn] = useState(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const sessionQuery = useSession(sessionId);
@@ -29,11 +25,12 @@ export function App() {
   const sendMessage = useSendMessage(sessionId);
   const { mutate } = sendMessage;
   const pending = sendMessage.isPending;
-  const liveQuery = useLiveSession(sessionId, turn, pending);
+  const liveQuery = useLiveSession(sessionId, sendMessage.submittedAt, pending);
   const session = sessionQuery.data;
   const live = pending ? liveQuery.data : undefined;
   // `session` is the previous chat until the new one arrives, so chat-specific areas wait.
   const loadingChat = sessionQuery.isPlaceholderData;
+  const isEmptyChat = !loadingChat && session?.messages.length === 0;
 
   function showSession(id: string) {
     sendMessage.reset();
@@ -45,7 +42,7 @@ export function App() {
   function newErrand() {
     if (createSession.isPending) return;
     // An untouched chat is already a new errand, so there is nothing to create.
-    if (session && !loadingChat && !session.messages.length) {
+    if (isEmptyChat) {
       setPanel('trace');
       inputRef.current?.focus();
       return;
@@ -74,11 +71,6 @@ export function App() {
   }, [session]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    writeStorage(THEME_KEY, theme);
-  }, [theme]);
-
-  useEffect(() => {
     writeStorage(SIDEBAR_KEY, collapsed);
   }, [collapsed]);
 
@@ -89,7 +81,6 @@ export function App() {
   // Stable, so memoised messages do not re-render when the parent does.
   const send: SendMessage = useCallback((text, approvalId) => {
     const startedAt = performance.now();
-    setTurn((current) => current + 1);
     mutate({ text, approvalId }, { onSuccess: () => setLastTurnMs(performance.now() - startedAt) });
   }, [mutate]);
 
@@ -109,7 +100,7 @@ export function App() {
   };
   // During a turn the panel shows live progress. Messages stay with the main query.
   const panelSession = live ? { ...session, state: live.state, trace: live.trace, runId: live.runId, limits: live.limits } : session;
-  const isHome = !loadingChat && !session.messages.length && panel === 'trace';
+  const isHome = isEmptyChat && panel === 'trace';
   const error = sendMessage.error && `${sendMessage.error.message}. Please try again.`;
 
   return (
@@ -117,13 +108,11 @@ export function App() {
       <Sidebar
         session={session}
         activeId={sessionId}
-        isEmptyChat={!loadingChat && !session.messages.length}
+        isEmptyChat={isEmptyChat}
         panel={panel}
         recent={recent}
-        theme={theme}
         collapsed={collapsed}
         onCollapse={setCollapsed}
-        onTheme={setTheme}
         onPanel={setPanel}
         onNewErrand={newErrand}
         onOpenSession={showSession}

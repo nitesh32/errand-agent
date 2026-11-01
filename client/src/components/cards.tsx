@@ -31,7 +31,6 @@ interface OptionsCardProps extends CardOf<'options'>, CardActions {
 function OptionsCard({ title, options, current, send, pending }: OptionsCardProps) {
   const [chosen, setChosen] = useState(options[0]);
   const [slot, setSlot] = useState(options[0].slots[0]);
-  const [other, setOther] = useState('');
   // Rating is 0 when choosing between existing bookings, where steps and reviews do not apply.
   const choosingProvider = options.some((option) => option.rating);
   const enabled = current && !pending;
@@ -101,11 +100,10 @@ function OptionsCard({ title, options, current, send, pending }: OptionsCardProp
         className="card-input"
         aria-label="Something else"
         placeholder="Something else…"
-        value={other}
         disabled={!enabled}
-        onChange={(event) => setOther(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' && other.trim()) send(other.trim());
+          const text = event.currentTarget.value.trim();
+          if (event.key === 'Enter' && text) send(text);
         }}
       />
       <div className="card-actions">

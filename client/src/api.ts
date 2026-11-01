@@ -43,7 +43,7 @@ export function useCreateSession() {
   });
 }
 
-/** Progress while a message runs. Keyed per turn, so one turn never shows another's data. */
+/** Progress while a message runs. `turn` is any per-turn value, so one turn never shows another's data. */
 export function useLiveSession(id: string | null, turn: number, enabled: boolean) {
   return useQuery<SessionView, ApiError>({
     queryKey: ['live', id, turn],

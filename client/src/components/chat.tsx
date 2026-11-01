@@ -82,17 +82,17 @@ const MessageView = memo(function MessageView({ message, isNew, isCurrentOptions
 });
 
 function Working({ state }: { state: WorkflowState }) {
-  const [startedAt] = useState(() => performance.now());
-  const [now, setNow] = useState(startedAt);
+  const [elapsedMs, setElapsedMs] = useState(0);
   useEffect(() => {
-    const timer = setInterval(() => setNow(performance.now()), 100);
+    const startedAt = performance.now();
+    const timer = setInterval(() => setElapsedMs(performance.now() - startedAt), 100);
     return () => clearInterval(timer);
   }, []);
   return (
     <div className="working" role="status">
       <span className="spinner" />
       {WORKING_WORDS[state] ?? 'Working'}
-      <span className="mono small">{((now - startedAt) / 1000).toFixed(1)}s</span>
+      <span className="mono small">{(elapsedMs / 1000).toFixed(1)}s</span>
     </div>
   );
 }
@@ -114,12 +114,8 @@ function Thread({ session, liveState, error, send, pending }: ThreadProps) {
 
   // Opening a chat lands at the bottom before the first paint, with no visible slide.
   useLayoutEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
-  }, []);
-
-  useEffect(() => {
     seenCount.current = messages.length;
-    if (opened.current) scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' });
+    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: opened.current ? 'smooth' : 'instant' });
     opened.current = true;
   }, [messages.length, pending]);
 

@@ -18,6 +18,8 @@ export function writeStorage(key: string, value: unknown): void {
   }
 }
 
+export const THEME_KEY = 'errand.theme';
+
 export interface RecentSession {
   id: string;
   title: string;

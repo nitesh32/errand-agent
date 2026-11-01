@@ -1,12 +1,13 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Brain, CalendarCheck, Moon, PanelLeftClose, PanelLeftOpen, SquarePen, Sun, Wrench } from 'lucide-react';
 import { RECENT_GROUPS, formatChatDate, recentGroup } from '../format.ts';
+import { readStorage, THEME_KEY, writeStorage } from '../storage.ts';
 import type { RecentSession } from '../storage.ts';
 import type { Panel, SessionView } from '../types.ts';
 import { Glide } from './glide.tsx';
 
-export type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark';
 
 interface NavButtonProps {
   on: boolean;
@@ -93,20 +94,24 @@ interface SidebarProps {
   isEmptyChat: boolean;
   panel: Panel;
   recent: RecentSession[];
-  theme: Theme;
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
-  onTheme: (theme: Theme) => void;
   onPanel: (panel: Panel) => void;
   onNewErrand: () => void;
   onOpenSession: (id: string) => void;
 }
 
-export function Sidebar({ session, activeId, isEmptyChat, panel, recent, theme, collapsed, onCollapse, onTheme, onPanel, onNewErrand, onOpenSession }: SidebarProps) {
+export function Sidebar({ session, activeId, isEmptyChat, panel, recent, collapsed, onCollapse, onPanel, onNewErrand, onOpenSession }: SidebarProps) {
+  const [theme, setTheme] = useState(() => readStorage<Theme>(THEME_KEY, 'light'));
   const { scenario, seed } = session.world;
   const upcoming = session.bookings.filter((booking) => booking.status === 'upcoming').length;
   const nextTheme: Theme = theme === 'dark' ? 'light' : 'dark';
   const togglePanel = (target: Panel) => onPanel(panel === target ? 'trace' : target);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    writeStorage(THEME_KEY, theme);
+  }, [theme]);
 
   return (
     <nav className={collapsed ? 'sidebar sidebar-collapsed' : 'sidebar'} aria-label="Sessions">
@@ -135,7 +140,7 @@ export function Sidebar({ session, activeId, isEmptyChat, panel, recent, theme, 
       <Glide className="nav-group sidebar-footer">
         <NavButton
           on={false}
-          onClick={() => onTheme(nextTheme)}
+          onClick={() => setTheme(nextTheme)}
           icon={theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
           label="Theme"
           aside={theme === 'dark' ? 'Light' : 'Dark'}
