@@ -28,13 +28,13 @@ An approval is a saved record: action, provider, slot, price, a hash of those fi
 
 ## Idempotency and recovery
 
-- **Key saved first:** the idempotency key and the `EXECUTING` state are written to disk before `book` is called.
+- **Key saved first:** the idempotency key and the `EXECUTING` state are written to disk before `book` is called. Keys include the session ID, because the provider's keys are global.
 - **Timeouts:** the agent never retries blindly. It calls `get_booking_status` first. `booked` finishes the run, `not_found` retries with the same key, and `failed` voids the approval and offers other options.
 - **New keys:** a new key is used only after the provider has definitively rejected the old one, such as `hold_expired`.
 - **Success claims:** the agent reports success only after a status check confirms it.
 - **Repeated "yes":** the approval is already `CONSUMED`, so the agent reports the existing booking and makes no call. Messages in one session are processed one at a time, which also covers double clicks.
 - **Duplicate check:** before holding a slot, the agent checks `list_bookings` for an active booking with the same provider and slot, or the same service and slot.
-- **Restarts:** a session found in `EXECUTING` or `VERIFYING` is reconciled against the provider before anything else happens. Cancel and reschedule follow the same pattern, verified through `list_bookings`.
+- **Restarts:** a session found in `EXECUTING` or `VERIFYING` when it is next loaded or messaged is reconciled against the provider before anything else happens. Cancel and reschedule follow the same pattern, verified through `list_bookings`.
 
 ## Untrusted output
 
@@ -54,13 +54,14 @@ Facts persist per user, across sessions: area, earliest time and preferred techn
 
 ## Observability
 
-Each run writes one JSONL file, appended as events happen, so it survives a crash. Events cover state transitions, model calls, tool name and arguments, sanitised results, approvals, guard decisions, latency, and tokens and cost where available. Review text is reduced to counts and flags. Keys and tokens are redacted before writing. The UI shows the same events beside the chat.
+Each run writes one JSONL file, appended as events happen, so it survives a crash. Events cover state transitions, model calls, tool name and arguments, sanitised results, approvals, guard decisions, latency, and tokens and cost where available. Review text is reduced to counts and flags. Keys and tokens are redacted before writing. The UI polls the same events beside the chat while a turn runs.
 
 ## Assumptions
 
 - A run is one errand, from first request to `DONE` or `FAILED`.
 - Slots are local IST times, one hour long.
 - Bookings also carry `price` and `area`, beyond the contract's fields, because reschedule needs them.
+- The mock serves one demo user, because the contract's `hold_slot` and `book` carry no user ID. It ignores area when listing providers.
 - Holds are not exclusive and cannot be released. Races surface as `slot_taken` at booking time.
 - A quote above the user's budget is reported, not offered for approval.
 
@@ -71,7 +72,7 @@ Each run writes one JSONL file, appended as events happen, so it survives a cras
 What I would change, in order:
 
 1. **Database:** move sessions, approvals and memory to Postgres, with row locks per session and unique constraints on the idempotency key and on active bookings.
-2. **Background reconciler:** recovery currently runs only at startup or on the user's next message. A worker should sweep in-flight executions so outcomes do not wait on the user.
+2. **Background reconciler:** recovery currently runs only when a session is next loaded or messaged. A worker should sweep in-flight executions so outcomes do not wait on the user.
 3. **Provider limits:** add rate limiting and a shared cache for search.
 4. **Traces:** send them to an OpenTelemetry backend instead of local files.
 5. **Model:** replace the rule parser with a real model, tracked against the same evals for cost and accuracy.

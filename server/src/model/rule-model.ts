@@ -40,7 +40,8 @@ function parseDates(lower: string, today: string): Pick<SlotProposal, 'dateFrom'
   if (/\btoday\b/.test(lower)) return day(today);
   if (/\btomorrow\b/.test(lower)) return day(addDays(today, 1));
   if (/\bnext week\b/.test(lower)) return { dateFrom: addDays(today, daysToSunday + 1), dateTo: addDays(today, daysToSunday + 7) };
-  if (/\b(this )?week\b/.test(lower)) return { dateFrom: today, dateTo: addDays(today, daysToSunday) };
+  // On a Sunday, "this week" would otherwise mean only what is left of today.
+  if (/\b(this )?week\b/.test(lower)) return { dateFrom: today, dateTo: addDays(today, daysToSunday || 7) };
   if (/\bweekend\b/.test(lower)) {
     const saturday = addDays(today, (6 - weekdayOf(today) + 7) % 7);
     return { dateFrom: saturday, dateTo: addDays(saturday, 1) };
@@ -162,7 +163,11 @@ function parseSelection(text: string, input: ModelInput): Selection | undefined 
   if (named) selection.providerQuery = named.providerName;
 
   const time = lower.match(new RegExp(String.raw`\bat\s+${CLOCK_TIME}`));
-  if (time) selection.time = toTime(time[1], time[2], time[3]);
+  if (time) {
+    const hour = toTime(time[1], time[2], time[3]);
+    const { dateFrom, dateTo } = parseDates(lower, input.today);
+    selection.time = dateFrom && dateFrom === dateTo ? `${dateFrom}T${hour}` : hour;
+  }
 
   return selection.index === undefined && !selection.providerQuery ? undefined : selection;
 }

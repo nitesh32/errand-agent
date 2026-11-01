@@ -8,13 +8,15 @@ No real providers, payments or external services are involved. No API key is nee
 
 ## Run
 
-Requires Node 22.6 or newer.
+Requires Node 22.12 or newer.
 
 ```bash
-npm install     # dev-only tools for type checking; there are no runtime dependencies
+npm install     # React and TanStack Query for the client, plus build tools
 npm test        # unit tests and evals; writes docs/eval-table.md
-npm start       # serves the app on http://localhost:3000
+npm start       # builds the client and serves the app on http://localhost:3000
 ```
+
+For client work with hot reload, run `npm run dev:server` and `npm run dev:client` in two terminals.
 
 ## Try it
 
@@ -27,13 +29,13 @@ npm start       # serves the app on http://localhost:3000
 | `/memory` | View saved preferences. Add `set <key> <value>` or `forget <key>` to change them. |
 | `/bookings` | List upcoming and past bookings. |
 | `/scenario <name>` | Force a mock failure, such as `timeout_but_booked`. |
-| `/restart` | Rebuild the agent from disk mid-run, to show recovery. |
+| `/restart` | Kill the agent at the next book call, then recover from disk. |
 
 ## Project layout
 
 ```
-server/   TypeScript agent, mock provider, HTTP API, tests and evals
-client/   Plain JavaScript web UI, talks to the server only over HTTP
+server/   TypeScript agent, mock provider, HTTP API, tests and evals. No runtime dependencies.
+client/   React, TypeScript and TanStack Query, built with Vite. Talks to the server only over HTTP.
 docs/     Design note, eval table, bug log, sample trace, demo script
 ```
 
@@ -54,3 +56,5 @@ The agent runs on a deterministic rule-based parser by default. To use a real mo
 ## Docs
 
 - [Design note](docs/design-note.md)
+- [Eval table](docs/eval-table.md)
+- [Guide for coding agents](AGENTS.md)

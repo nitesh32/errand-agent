@@ -47,6 +47,12 @@ test('reads dates', async () => {
   assert.equal(await from('on 5 Jan'), '2027-01-05');
 });
 
+test('"this week" on a Sunday reaches next Sunday, not just the rest of today', async () => {
+  const { slots } = await parse('this week', { today: '2026-11-01' });
+  assert.equal(slots.dateFrom, '2026-11-01');
+  assert.equal(slots.dateTo, '2026-11-08');
+});
+
 test('reads times, and treats a bare small hour as afternoon', async () => {
   assert.equal((await parse('after 2pm')).slots.earliest, '14:00');
   assert.equal((await parse('after 2')).slots.earliest, '14:00');
@@ -75,6 +81,12 @@ test('reads selections by number, word and name', async () => {
   assert.deepEqual(await selection('option 1'), { index: 1 });
   assert.deepEqual(await selection('the second one'), { index: 2 });
   assert.deepEqual(await selection('AquaFix at 11'), { providerQuery: 'AquaFix Services', time: '11:00' });
+});
+
+test('a selection that names a day becomes an exact slot', async () => {
+  const selection = async (text: string) => (await parse(text, { options: OPTIONS, state: 'PRESENTING' })).selection;
+  assert.deepEqual(await selection('2 on 5 Nov at 09:00'), { index: 2, time: '2026-11-05T09:00' });
+  assert.deepEqual(await selection('Ramesh tomorrow at 11'), { providerQuery: 'Ramesh Plumbing', time: '2026-11-03T11:00' });
 });
 
 test('reads reviews, declines and corrections as different intents', async () => {

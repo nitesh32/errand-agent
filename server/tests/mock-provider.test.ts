@@ -169,6 +169,15 @@ test('a saved state restores into a new instance', async () => {
   assert.equal((await restored.get_booking_status('key')).status, 'booked');
 });
 
+test('a scenario still works after an earlier use consumed its outcomes', async () => {
+  const { provider } = setup();
+  for (const key of ['first', 'second']) {
+    provider.applyScenario('timeout_but_booked');
+    const { hold_id } = await hold(provider, await freeSlot(provider));
+    assert.deepEqual(await provider.book(hold_id, key), { ok: false, error: 'timeout' });
+  }
+});
+
 test('a configured tool failure throws', async () => {
   const { provider } = setup({ failingTools: ['list_bookings'] });
   await assert.rejects(provider.list_bookings('u_demo'), /exploded/);

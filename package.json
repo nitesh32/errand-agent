@@ -4,15 +4,29 @@
   "description": "Chat agent that books, reschedules and cancels home-service errands, with code-enforced approval, idempotent booking, injection-safe tool output, memory and offline evals.",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.6" },
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
-    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/src/main.ts",
+    "start": "npm run build && node --experimental-strip-types --disable-warning=ExperimentalWarning server/src/main.ts",
+    "dev:server": "node --experimental-strip-types --disable-warning=ExperimentalWarning --watch server/src/main.ts",
+    "dev:client": "vite client",
+    "build": "vite build client",
     "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"server/tests/*.test.ts\" && npm run evals",
     "evals": "node --experimental-strip-types --disable-warning=ExperimentalWarning server/evals/run-evals.ts",
-    "typecheck": "tsc -p server"
+    "typecheck": "tsc -p server && tsc -p client"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "^5.8.0",
+    "vite": "^8.3.5"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.105.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

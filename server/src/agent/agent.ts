@@ -4,6 +4,7 @@ import { localDate } from '../infra/clock.ts';
 import type { FileStore } from '../infra/file-store.ts';
 import type { Tracer } from '../infra/tracer.ts';
 import { Memory } from '../memory/memory.ts';
+import { SCENARIOS } from '../mock/mock-provider.ts';
 import type { MockProvider } from '../mock/mock-provider.ts';
 import { validateProposal } from '../model/model.ts';
 import type { Model, Proposal } from '../model/model.ts';
@@ -12,13 +13,14 @@ import { DEFAULT_LIMITS, LimitExceeded, Limits } from '../tools/limits.ts';
 import type { LimitConfig } from '../tools/limits.ts';
 import type { Booking, TraceEvent } from '../types.ts';
 import { ApprovalError, isConfirmation } from './approval.ts';
+import type { ApprovalStatus } from './approval.ts';
 import { approveAndExecute, presentOptions, resumeExecution, selectForBooking } from './booking-flow.ts';
 import { selectForChange } from './change-flow.ts';
 import { advance, answerPendingFact, applyCorrection, mergeSlots, startErrand } from './collect-flow.ts';
 import { runCommand } from './commands.ts';
 import { applyMemory, findOption, remind, showBookings, showReviews } from './replies.ts';
 import { createSession, currentApproval, formatSlot, say, trace, voidPending } from './session.ts';
-import type { Message, Session, Slots, Turn, WorkflowState } from './session.ts';
+import type { Message, Session, SlotName, Slots, Turn, WorkflowState } from './session.ts';
 import { isAtRest, isInFlight, transition } from './state-machine.ts';
 
 export interface AgentOptions {
@@ -44,6 +46,10 @@ export interface SessionView {
   memory: ReturnType<Memory['list']>;
   bookings: Booking[];
   model: string;
+  world: { seed: number; scenario: string; scenarios: string[] };
+  /** What the agent just asked for, so the client can offer one-click answers. */
+  awaiting: SlotName | 'fact' | null;
+  approvals: { id: string; status: ApprovalStatus }[];
 }
 
 /** Simulates the process dying at a named point. Never caught by the agent. */
@@ -60,6 +66,7 @@ export class Agent {
   private readonly limitConfig: LimitConfig;
   private readonly userId: string;
   private readonly queues = new Map<string, Promise<unknown>>();
+  private readonly running = new Set<string>();
   private crashAt?: string;
 
   constructor(options: AgentOptions) {
@@ -79,8 +86,12 @@ export class Agent {
     this.crashAt = point;
   }
 
-  /** The current session. A session found mid-action is reconciled first. */
-  getSession(id: string): Promise<SessionView> {
+  /**
+   * The current session. A session found mid-action is reconciled first. While a turn is
+   * running, this returns what has been saved so far, so the trace can be watched live.
+   */
+  async getSession(id: string): Promise<SessionView> {
+    if (this.running.has(id)) return this.view(this.load(id));
     return this.enqueue(id, async () => {
       const session = this.load(id);
       return isInFlight(session) ? this.runTurn(session) : this.view(session);
@@ -93,7 +104,15 @@ export class Agent {
   }
 
   private enqueue<T>(id: string, work: () => Promise<T>): Promise<T> {
-    const result = (this.queues.get(id) ?? Promise.resolve()).then(work, work);
+    const tracked = async () => {
+      this.running.add(id);
+      try {
+        return await work();
+      } finally {
+        this.running.delete(id);
+      }
+    };
+    const result = (this.queues.get(id) ?? Promise.resolve()).then(tracked, tracked);
     this.queues.set(id, result.catch(() => undefined));
     return result;
   }
@@ -159,9 +178,9 @@ export class Agent {
    * a repeated "yes" appears in the trace of the booking it protected.
    */
   private startRun(session: Session, text?: string): void {
+    if (text === undefined || text.trim().startsWith('/') || isConfirmation(text)) return;
     session.usage.modelCalls = 0;
     session.usage.toolCalls = 0;
-    if (text === undefined || text.trim().startsWith('/') || isConfirmation(text)) return;
     session.runSeq++;
     session.runId = `run_${session.id}_${session.runSeq}`;
   }
@@ -327,7 +346,9 @@ export class Agent {
       say(turn, `I don't see that option. Pick a number from 1 to ${session.options.length}.`);
       return;
     }
-    const slot = selection?.time ? option.slots.find((item) => item.endsWith(`T${selection.time}`)) : option.slots[0];
+    // `time` is either an exact slot or a time of day, which means its first free day.
+    const time = selection?.time;
+    const slot = time ? option.slots.find((item) => item === time || item.endsWith(`T${time}`)) : option.slots[0];
     if (!slot) {
       say(turn, `${option.providerName} isn't free at ${selection?.time}. Free times: ${option.slots.slice(0, 5).map(formatSlot).join(', ')}.`);
       return;
@@ -364,6 +385,9 @@ export class Agent {
       memory: new Memory(store, session.userId, clock).list(),
       bookings: provider.state.bookings,
       model: model.name,
+      world: { seed: provider.state.config.seed, scenario: provider.state.scenario, scenarios: Object.keys(SCENARIOS) },
+      awaiting: session.pendingFact ? 'fact' : session.state === 'COLLECTING' ? session.awaiting ?? null : null,
+      approvals: session.approvals.map(({ id, status }) => ({ id, status })),
     };
   }
 }

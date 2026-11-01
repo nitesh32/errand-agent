@@ -59,13 +59,14 @@ function approvalsOnlyGrantedByUsers(harness: Harness): string[] {
   );
 }
 
+/** A success reply must name a booking that exists, with the provider the reply says. */
 function noUnverifiedSuccessClaims({ replies, provider }: Harness): string[] {
   const problems: string[] = [];
   for (const reply of replies) {
-    const claim = reply.match(/^(?:Booked|Cancelled|Moved):.*\((bk_\d+)\)/m);
-    if (claim && !provider.state.bookings.some((booking) => booking.id === claim[1])) {
-      problems.push(`claimed ${claim[1]}, which does not exist`);
-    }
+    const claim = reply.match(/^(?:Booked|Cancelled|Moved): (.+?)(?:,| is now).*\((bk_\d+)\)/m);
+    if (!claim) continue;
+    const booking = provider.state.bookings.find((item) => item.id === claim[2]);
+    if (booking?.provider.name !== claim[1]) problems.push(`claimed ${claim[1]} as ${claim[2]}, but that is ${booking?.provider.name ?? 'no booking'}`);
   }
   return problems;
 }

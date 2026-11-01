@@ -73,7 +73,8 @@ export async function searchAndPresent(turn: Turn, note?: string): Promise<void>
 export function requestApproval(turn: Turn, providerName: string, terms: ApprovalTerms, note?: string): void {
   const { session } = turn;
   voidPending(turn, 'replaced');
-  const approval = createApproval(`apr_${session.runSeq}_${session.approvals.length + 1}`, providerName, terms);
+  // The session id matters: idempotency keys derive from this, and the provider's keys are global.
+  const approval = createApproval(`apr_${session.id}_${session.approvals.length + 1}`, providerName, terms);
   session.approvals.push(approval);
   session.approvalId = approval.id;
   transition(turn, 'AWAITING_APPROVAL', `${terms.action} needs confirmation`);

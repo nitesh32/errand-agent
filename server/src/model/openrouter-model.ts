@@ -9,7 +9,7 @@ You only extract what the user said. You cannot book, approve or call anything.
 Fields:
 - intent: one of ${INTENTS.join(', ')}
 - slots: any of service (${SERVICES.join(', ')}), area, dateFrom, dateTo (YYYY-MM-DD), earliest, latest (HH:MM, 24 hour), budget (number), noBudget, notes, sameAsLast
-- selection: any of index (1-based), providerQuery, time (HH:MM), when the user picks one of the listed options
+- selection: any of index (1-based), providerQuery, time (HH:MM, or YYYY-MM-DDTHH:MM when the user names a day), when the user picks one of the listed options
 - memory: { op: view | set | forget, key: area | earliest_time | technician:<service> | all, value, evidence }, where evidence quotes the user's exact words
 
 Use provide for answers and corrections during an errand, decline for "no", and none if nothing applies. Reply with JSON only.`;

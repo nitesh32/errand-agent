@@ -44,7 +44,7 @@ export interface SlotProposal {
 export interface Selection {
   index?: number;
   providerQuery?: string;
-  time?: string;
+  time?: string; // HH:MM, or YYYY-MM-DDTHH:MM for an exact slot
 }
 
 export interface MemoryProposal {
@@ -63,6 +63,7 @@ export interface Proposal {
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^\d{2}:\d{2}$/;
+const TIME_OR_SLOT = /^(\d{4}-\d{2}-\d{2}T)?\d{2}:\d{2}$/;
 const MAX_TEXT = 200;
 
 const isText = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= MAX_TEXT;
@@ -106,7 +107,7 @@ export function validateProposal(raw: unknown): { proposal: Proposal; rejected: 
   if (input.selection) {
     proposal.selection = keepValid<Selection>(
       input.selection,
-      { index: (value) => Number.isInteger(value), providerQuery: isText, time: (value) => typeof value === 'string' && TIME.test(value) },
+      { index: (value) => Number.isInteger(value), providerQuery: isText, time: (value) => typeof value === 'string' && TIME_OR_SLOT.test(value) },
       'selection.',
       rejected,
     );

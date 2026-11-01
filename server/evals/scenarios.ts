@@ -102,6 +102,22 @@ export const SCENARIOS: Scenario[] = [
     },
   },
   {
+    name: 'Picks a later slot',
+    covers: 'approval',
+    expected: 'Naming a day and time books exactly that slot, and the approval shows it first',
+    options: { world: { bookOutcomes: ['success'] } },
+    run: async (h, check) => {
+      await h.sayAll(REQUEST, 'Powai');
+      const [option] = h.session().options;
+      const later = option.slots.at(-1)!;
+      const day = Number(later.slice(8, 10));
+      await h.say(`1 on ${day} Nov at ${later.slice(11)}`);
+      check(h.approval()?.slot === later && later !== option.slots[0], `approved slot=${h.approval()?.slot}`);
+      await h.say('yes');
+      check(h.newBookings()[0]?.slot === later, `booked slot=${h.newBookings()[0]?.slot}`);
+    },
+  },
+  {
     name: 'Yes with a condition is not approval',
     covers: 'approval',
     expected: '"yes but on Saturday" changes the date and books nothing',
@@ -384,6 +400,23 @@ export const SCENARIOS: Scenario[] = [
       check(h.session().approvals.length === 0, `approvals=${h.session().approvals.length}`);
       check(Object.keys(h.provider.state.holds).length === 0, 'no hold placed');
       noBookings(h, check);
+    },
+  },
+  {
+    name: 'Two sessions book two errands',
+    covers: 'booking correctness',
+    expected: 'Each session gets its own booking, so one idempotency key never answers for both',
+    options: { world: { bookOutcomes: ['success', 'success'] } },
+    run: async (h, check) => {
+      await toApproval(h);
+      await h.say('yes');
+      h.newSession();
+      await h.sayAll('Find a cleaner in Powai this week under 3000', '1');
+      const reply = await h.say('yes');
+      const bookings = h.newBookings();
+      check(bookings.length === 2, `bookings=${bookings.length}`);
+      check(bookings[1]?.service === 'cleaning', `second booking=${bookings[1]?.service}`);
+      check(reply.includes(`(${bookings[1]?.id})`), 'reply names the new booking');
     },
   },
   {

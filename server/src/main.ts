@@ -12,8 +12,8 @@ import { RuleModel } from './model/rule-model.ts';
 import { createApp } from './routes.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const DATA_DIR = join(ROOT, 'data');
-const CLIENT_DIR = join(ROOT, 'client');
+const DATA_DIR = process.env.DATA_DIR ?? join(ROOT, 'data');
+const CLIENT_DIR = join(ROOT, 'client', 'dist');
 const PORT = Number(process.env.PORT ?? 3000);
 const WORLD_ID = 'world';
 

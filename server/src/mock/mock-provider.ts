@@ -34,6 +34,7 @@ type KeyRecord = { status: 'booked'; booking_id: string } | { status: 'failed'; 
 
 export interface MockState {
   config: MockConfig;
+  scenario: string;
   rng: number;
   nextId: number;
   bookings: Booking[];
@@ -96,6 +97,7 @@ export class MockProvider {
     };
     this.state = savedState ?? {
       config: fullConfig,
+      scenario: 'default',
       rng: fullConfig.seed,
       nextId: 1000,
       bookings: seedBookings(localDate(clock.now())),
@@ -115,7 +117,8 @@ export class MockProvider {
 
   /** Clears anything previously forced, then applies one named scenario. */
   applyScenario(name: string): void {
-    this.configure({ bookOutcomes: [], quoteDeltas: [], conflictSlots: [], ...SCENARIOS[name] });
+    this.state.scenario = name;
+    this.configure({ bookOutcomes: [], quoteDeltas: [], conflictSlots: [], ...structuredClone(SCENARIOS[name]) });
   }
 
   async search_providers(service: string, _area: string, date_range: DateRange): Promise<Provider[]> {
