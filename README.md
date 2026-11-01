@@ -10,7 +10,7 @@ Requires Node 22.12 or newer.
 
 ```bash
 npm install     # React, TanStack Query and icons for the client, plus build tools
-npm test        # unit tests and evals; writes docs/eval-table.md and the sample trace
+npm test        # server and client tests, then evals; writes docs/eval-table.md and the sample trace
 npm start       # builds the client and serves the app on http://localhost:3000
 ```
 
@@ -26,7 +26,7 @@ Set `DATA_DIR` to keep a test server away from `data/`, and `PORT` to use anothe
 
 | Command | What it does |
 |---|---|
-| `/memory` | View saved preferences. Add `set <key> <value>` or `forget <key>` to change them. |
+| `/memory` | View saved preferences. Add `set <key> <value>`, `confirm <key>` or `forget <key>` to change them. |
 | `/bookings` | List upcoming and past bookings. |
 | `/scenario <name>` | Force a mock outcome: `review_injection`, `timeout_but_booked`, `timeout_not_booked`, `slot_taken`, `price_change`, `slot_conflict` or `default`. |
 | `/restart` | Kill the agent at the next book call, then recover from disk. |
@@ -35,7 +35,13 @@ To see a failure handled, run `/scenario timeout_but_booked`, then book somethin
 
 ## The trace panel
 
-The panel beside the chat shows what the agent did, live during each turn. Events are grouped by the message that caused them, and can be filtered by type. Click a row to see all its fields, or choose **Raw** for the events as saved. Close it with the button at the top right of the chat, and drag its left edge to resize it.
+The panel beside the chat shows what the agent did, live during each turn. It has three views:
+
+- **Summary:** the outcome, each step in plain words under the message that caused it, and four safety checks worked out from the recorded events. Click a step to see its tool, arguments and result.
+- **Details:** every event, including state transitions and model calls, with latency, limits and filters by type.
+- **Raw:** the events as saved.
+
+Close it with the button at the top right of the chat, and drag its left edge to resize it.
 
 Each run also writes one JSONL file under `data/traces/`. A sample is in [docs/traces](docs/traces/timeout-after-success.jsonl).
 

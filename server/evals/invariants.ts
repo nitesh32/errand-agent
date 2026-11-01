@@ -12,6 +12,7 @@ export function checkInvariants(harness: Harness): string[] {
     ...noEffectWithoutApproval(harness),
     ...approvalsOnlyGrantedByUsers(harness),
     ...noUnverifiedSuccessClaims(harness),
+    ...confirmationCardsNameRealBookings(harness),
     ...noRetryBeforeStatusCheck(harness),
     ...onlyLegalTransitions(harness),
     ...reviewsNeverReachModel(harness),
@@ -19,6 +20,17 @@ export function checkInvariants(harness: Harness): string[] {
     ...noSecretsInTraces(harness),
     ...everyTurnReplied(harness),
   ];
+}
+
+function confirmationCardsNameRealBookings(harness: Harness): string[] {
+  const { bookings } = harness.provider.state;
+  const problems: string[] = [];
+  for (const session of harness.sessions()) {
+    for (const card of session.messages.flatMap((message) => message.cards)) {
+      if (card.type === 'confirmation' && !bookings.some((booking) => booking.id === card.bookingId)) problems.push(`confirmation card for unknown booking ${card.bookingId}`);
+    }
+  }
+  return problems;
 }
 
 function noDuplicateBookings({ provider }: Harness): string[] {

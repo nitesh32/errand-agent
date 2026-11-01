@@ -15,15 +15,18 @@ const WORKING_WORDS: Partial<Record<WorkflowState, string>> = {
 };
 
 const BOOKING_LINE = /\(bk_\d+\)$/m;
+const CONFIRMATION_LINE = /^(Booked|Moved|Cancelled): /;
+const MEMORY_LINE = /^(Here's what I remember|I don't have any saved|Forgotten: |An earlier )/;
 const REVEAL_WORD_MS = 55;
 const REVEAL_MAX_MS = 1200;
 
 /** One-click answers. Never offered at approval: confirming stays on the card or a typed yes. */
-function quickReplies({ awaiting, state }: SessionView): string[] {
+function quickReplies({ awaiting, messages }: SessionView): string[] {
   if (awaiting === 'fact') return ['No', 'Yes'];
   if (awaiting === 'budget') return ['No limit'];
   if (awaiting === 'dateRange') return ['This week', 'Saturday'];
-  return state === 'DONE' ? ['Show my bookings'] : [];
+  // Only straight after a finished action, so it does not linger once the bookings are showing.
+  return messages.at(-1)?.cards.some((card) => card.type === 'confirmation') ? ['Show my bookings'] : [];
 }
 
 /** Text that a card already shows is left out, so nothing appears twice. */
@@ -31,11 +34,15 @@ function visibleText({ text, cards }: Message): string[] {
   const optionTitles = cards.flatMap((card) => (card.type === 'options' ? [card.title] : []));
   const hasApproval = cards.some((card) => card.type === 'approval');
   const hasBookings = cards.some((card) => card.type === 'bookings');
+  const confirmation = cards.find((card) => card.type === 'confirmation');
+  const hasMemory = cards.some((card) => card.type === 'memory');
   return text
     .split('\n\n')
     .filter((part) => !optionTitles.some((title) => part.startsWith(title)))
     .filter((part) => !(hasApproval && part.endsWith('Reply "yes" to confirm.')))
-    .filter((part) => !(hasBookings && BOOKING_LINE.test(part)));
+    .filter((part) => !(hasBookings && BOOKING_LINE.test(part)))
+    .filter((part) => !(confirmation && (CONFIRMATION_LINE.test(part) || part === confirmation.note)))
+    .filter((part) => !(hasMemory && MEMORY_LINE.test(part)));
 }
 
 /**
@@ -56,28 +63,33 @@ interface MessageViewProps {
   isCurrentOptions: boolean;
   approvals: SessionView['approvals'];
   bookings: SessionView['bookings'];
+  memory: SessionView['memory'];
   send: SendMessage;
+  fillComposer: (text: string) => void;
   pending: boolean;
 }
 
 /** Memoised, so live polling during a turn does not re-render every past message. */
-const MessageView = memo(function MessageView({ message, isNew, isCurrentOptions, approvals, bookings, send, pending }: MessageViewProps) {
+const MessageView = memo(function MessageView({ message, isNew, isCurrentOptions, approvals, bookings, memory, send, fillComposer, pending }: MessageViewProps) {
   // Decided once, so a later render or a reload never replays the reveal.
   const [animate] = useState(isNew);
   if (message.role === 'user') return <div className="user-message">{message.text}</div>;
 
   const renderCards = (cards: Card[]) =>
-    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={approvals} bookings={bookings} />);
+    cards.map((card, index) => <MessageCard key={index} card={card} current={isCurrentOptions} send={send} pending={pending} approvals={approvals} bookings={bookings} memory={memory} fillComposer={fillComposer} />);
   // Steps and reviews lead into the text. A choice comes last, so any note explaining it reads first.
-  const isChoice = ({ type }: Card) => type === 'options' || type === 'approval';
+  // The receipt replaces the progress rows. The trace keeps every step, and failed runs have no receipt.
+  const hasReceipt = message.cards.some((card) => card.type === 'confirmation');
+  const shown = hasReceipt ? message.cards.filter((card) => card.type !== 'steps') : message.cards;
+  const isChoice = ({ type }: Card) => type === 'options' || type === 'approval' || type === 'confirmation' || type === 'memory';
 
   return (
     <div className={animate ? 'agent-message fade-up' : 'agent-message'}>
-      {renderCards(message.cards.filter((card) => !isChoice(card)))}
+      {renderCards(shown.filter((card) => !isChoice(card)))}
       {visibleText(message).map((part, index) => (
         <p className="agent-text" key={index}>{animate ? <RevealText text={part} /> : part}</p>
       ))}
-      {renderCards(message.cards.filter(isChoice))}
+      {renderCards(shown.filter(isChoice))}
     </div>
   );
 });
@@ -103,11 +115,12 @@ interface ThreadProps {
   liveState: WorkflowState;
   error: string | null;
   send: SendMessage;
+  fillComposer: (text: string) => void;
   pending: boolean;
 }
 
 /** One chat's title and messages. Keyed by chat, so its scroll and reveal state start fresh. */
-function Thread({ session, liveState, error, send, pending }: ThreadProps) {
+function Thread({ session, liveState, error, send, fillComposer, pending }: ThreadProps) {
   const { messages } = session;
   const scroller = useRef<HTMLDivElement>(null);
   const seenCount = useRef(messages.length);
@@ -139,7 +152,9 @@ function Thread({ session, liveState, error, send, pending }: ThreadProps) {
               isCurrentOptions={index === lastOptionsIndex && session.state === 'PRESENTING'}
               approvals={session.approvals}
               bookings={session.bookings}
+              memory={session.memory}
               send={send}
+              fillComposer={fillComposer}
               pending={pending}
             />
           ))}
@@ -168,14 +183,15 @@ interface ChatProps {
   composer: ComposerProps;
   panelOpen: boolean;
   onTogglePanel: () => void;
+  fillComposer: (text: string) => void;
 }
 
-export function Chat({ composerKey, session, loading, liveState, error, composer, panelOpen, onTogglePanel }: ChatProps) {
+export function Chat({ composerKey, session, loading, liveState, error, composer, panelOpen, onTogglePanel, fillComposer }: ChatProps) {
   return (
     <section className="chat">
       {loading
         ? <ChatSkeleton />
-        : <Thread key={session.id} session={session} liveState={liveState} error={error} send={composer.onSubmit} pending={composer.pending} />}
+        : <Thread key={session.id} session={session} liveState={liveState} error={error} send={composer.onSubmit} fillComposer={fillComposer} pending={composer.pending} />}
       <button type="button" className="panel-toggle" aria-label={panelOpen ? 'Close panel' : 'Open trace'} title={panelOpen ? 'Close panel' : 'Open trace'} onClick={onTogglePanel}>
         {panelOpen ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
       </button>

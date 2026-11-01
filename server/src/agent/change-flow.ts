@@ -165,6 +165,18 @@ function finishChange(turn: Turn): void {
   session.completed = { action: approval.action, bookingId: booking.id };
   addStep(turn, 'Verified', booking.id);
   transition(turn, 'DONE', `${approval.action} verified`);
+  turn.cards.push({
+    type: 'confirmation',
+    action: approval.action,
+    bookingId: booking.id,
+    providerName: booking.provider.name,
+    service: booking.service,
+    area: booking.area,
+    slot: approval.slot,
+    price: approval.price,
+    retried: session.execution!.attempts > 1,
+    ...(approval.action === 'reschedule' ? { previousSlot: booking.slot, samePrice: approval.price === booking.price } : {}),
+  });
   say(
     turn,
     approval.action === 'cancel'

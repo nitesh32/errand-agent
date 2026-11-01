@@ -228,6 +228,8 @@ async function slotLost(turn: Turn): Promise<void> {
   await refreshAfterLostSlot(turn, `${approval.providerName} lost the ${formatSlot(held.slot)} slot to someone else, so nothing was booked.`);
 }
 
+const RECOVERED_NOTE = "The provider timed out, so I checked the booking status before telling you. It had gone through, and there's no duplicate.";
+
 function finishBooking(turn: Turn, bookingId: string, recovered: boolean): void {
   const { session, memory } = turn;
   const approval = currentApproval(session)!;
@@ -240,8 +242,20 @@ function finishBooking(turn: Turn, bookingId: string, recovered: boolean): void 
   memory.infer(`technician:${session.slots.service!.value}`, approval.providerId, approval.providerName);
   if (session.slots.area?.source === 'user') memory.infer('area', session.slots.area.value);
 
+  turn.cards.push({
+    type: 'confirmation',
+    action: 'book',
+    bookingId,
+    providerName: approval.providerName,
+    service: session.slots.service!.value,
+    area: session.slots.area?.value ?? '',
+    slot: approval.slot,
+    price: approval.price,
+    retried: session.execution!.attempts > 1,
+    ...(recovered ? { note: RECOVERED_NOTE } : {}),
+  });
   say(turn, `Booked: ${approval.providerName}, ${formatSlot(approval.slot)}, ${rupees(approval.price)} (${bookingId}).`);
-  if (recovered) say(turn, "The provider timed out, so I checked the booking status before telling you. It had gone through, and there's no duplicate.");
+  if (recovered) say(turn, RECOVERED_NOTE);
 }
 
 /** Runs before anything else when a session is found mid-action, such as after a restart. */

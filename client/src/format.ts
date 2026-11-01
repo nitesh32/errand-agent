@@ -17,6 +17,13 @@ export function formatSlot(slot: string): string {
   return `${DAYS[value.getUTCDay()]} ${value.getUTCDate()} ${MONTHS[value.getUTCMonth()]} · ${time}`;
 }
 
+/** "2026-11-04T09:00" becomes ["Wed 4 Nov", "09:00 – 10:00"]. Slots are one hour long. */
+export function slotParts(slot: string): [string, string] {
+  const [date, time] = formatSlot(slot).split(' · ');
+  const nextHour = String((Number(time.slice(0, 2)) + 1) % 24).padStart(2, '0');
+  return [date, `${time} – ${nextHour}${time.slice(2)}`];
+}
+
 /** The message that picks an exact slot. The server reads it like any typed reply. */
 export function slotMessage(index: number, slot: string): string {
   const [date, time] = slot.split('T');

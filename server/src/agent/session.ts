@@ -82,7 +82,9 @@ export type Card =
   | { type: 'approval'; approvalId: string; action: ApprovalAction; providerName: string; slot: string; price: number; note?: string; expiresAt?: string }
   | { type: 'reviews'; providerName: string; reviews: SafeReview[] }
   | { type: 'bookings' } // the client shows the current list, so an old card cannot go stale
-  | { type: 'steps'; steps: Step[] };
+  | { type: 'steps'; steps: Step[] }
+  | { type: 'confirmation'; action: ApprovalAction; bookingId: string; providerName: string; service: string; area: string; slot: string; previousSlot?: string; price: number; note?: string; retried: boolean; samePrice?: boolean } // only ever sent after verification
+  | { type: 'memory' }; // the client shows the current facts, as with bookings
 
 export interface Message {
   id: string;

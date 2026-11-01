@@ -124,7 +124,7 @@ export function App() {
         <Home key={sessionId} composer={composer} />
       ) : (
         <main className="workspace">
-          <Chat composerKey={sessionId} session={session} loading={loadingChat} liveState={live?.state ?? session.state} error={error} composer={composer} panelOpen={panel !== 'none'} onTogglePanel={() => setPanel(panel === 'none' ? 'trace' : 'none')} />
+          <Chat composerKey={sessionId} session={session} loading={loadingChat} liveState={live?.state ?? session.state} error={error} composer={composer} panelOpen={panel !== 'none'} onTogglePanel={() => setPanel(panel === 'none' ? 'trace' : 'none')} fillComposer={setPrefill} />
           <SidePanel
             panel={panel}
             session={panelSession}

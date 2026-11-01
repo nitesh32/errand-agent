@@ -1,5 +1,5 @@
 import type { MemoryProposal, Selection } from '../model/model.ts';
-import { applyCorrection, questionFor } from './collect-flow.ts';
+import { advance, answerPendingFact, applyCorrection, questionFor } from './collect-flow.ts';
 import { currentApproval, formatSlot, rupees, say, trace } from './session.ts';
 import type { Option, Session, Turn } from './session.ts';
 import { isAtRest } from './state-machine.ts';
@@ -77,7 +77,34 @@ export function describeMemory(turn: Turn): void {
     return `${describeKey(fact.key)}: ${fact.label} (${origin})`;
   });
   say(turn, lines.length ? `Here's what I remember:\n${lines.join('\n')}` : "I don't have any saved preferences.");
-  if (forgottenKeys.length) say(turn, `Forgotten: ${forgottenKeys.map(describeKey).join(', ')}.`);
+  const hasNewer = (key: string) => facts.some((fact) => fact.key === key);
+  const gone = forgottenKeys.filter((key) => !hasNewer(key));
+  if (gone.length) say(turn, `Forgotten: ${gone.map(describeKey).join(', ')}.`);
+  for (const key of forgottenKeys.filter(hasNewer)) say(turn, `An earlier ${describeKey(key)} was forgotten and won't be reused.`);
+  turn.cards.push({ type: 'memory' });
+}
+
+/**
+ * The user's yes to one guess, from the memory card. It is a command, so it can never count as
+ * approval for a waiting booking.
+ */
+export async function confirmFact(turn: Turn, key: string): Promise<void> {
+  const { memory, session } = turn;
+  const fact = memory.pending(key);
+  if (!fact) {
+    say(turn, "That isn't waiting for your yes.");
+    return remind(turn);
+  }
+  trace(turn, 'INPUT', { memory: 'confirm', key });
+  say(turn, `Okay, I'll use ${fact.label} as your ${describeKey(key)}.`);
+  if (session.pendingFact?.key === key) {
+    answerPendingFact(turn, true);
+    delete session.awaiting;
+    if (session.state === 'COLLECTING') return advance(turn);
+    return remind(turn);
+  }
+  memory.confirm(key);
+  remind(turn);
 }
 
 async function forgetKey(turn: Turn, key: string): Promise<void> {

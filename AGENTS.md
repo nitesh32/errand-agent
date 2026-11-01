@@ -6,7 +6,7 @@ Errand Agent is a take-home assignment for a founding AI engineer role. It is a 
 
 ```bash
 npm install          # first time only
-npm test             # unit tests, then evals; rewrites docs/eval-table.md and the sample trace
+npm test             # server and client tests, then evals; rewrites docs/eval-table.md and the sample trace
 npm run typecheck    # server and client
 npm start            # builds the client, serves http://localhost:3000
 npm run dev:server   # with npm run dev:client, for hot reload on :5173
@@ -31,7 +31,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 2. **Side effects:** `book`, `cancel` and `reschedule` are called only through `GuardedTools`, which calls `assertApproved`. Any change to provider, slot or price voids the approval.
 3. **Booking:** save the idempotency key before the call. After a timeout, call `get_booking_status` before any retry. Never report success before verifying.
 4. **Untrusted text:** review text never reaches the model, state, memory or traces. Render it as text only, so never use `dangerouslySetInnerHTML`.
-5. **No accidental approval:** a stray Enter or a single click on an option must never approve. So Confirm never takes default focus and ignores clicks in its first 800ms, picking an option never auto-advances, and quick replies are never offered at approval.
+5. **No accidental approval:** a stray Enter or a single click on an option must never approve. So Confirm never takes default focus and ignores clicks in its first 800ms, picking an option never auto-advances, and quick replies are never offered at approval. A button outside the approval card must never send a plain confirmation word, because that would count as approval. Use a slash command, as `/memory confirm` does.
 6. **State:** change state only through `transition()`. A new state means updating `ALLOWED_TRANSITIONS`.
 7. **Limits:** charge every model and tool call. Every exit, including errors, ends with a clear message saying what did and did not happen.
 8. **Memory:** only `Memory.get` supplies facts to act on, and it hides unconfirmed inferred facts. Forgotten values stay only as hashes.
@@ -54,8 +54,9 @@ These rules are graded. Do not weaken them, even to make something easier:
 | `server/evals/` | Harness with a scripted model, scenarios, invariants, table generator |
 | `client/src/api.ts` | All API calls, as TanStack Query hooks |
 | `client/src/types.ts` | API types, imported type-only from the server so they cannot drift |
+| `client/src/trace-steps.ts` | Plain pure functions that turn trace events into the Summary view's steps, outcome and safety checks. Tested in `client/tests/` |
 | `client/src/viewport.ts` | Screen-width checks matching the media queries in `app.css`, and which panel shows by default |
-| `client/src/components/` | React components. `glide.tsx` is the one shared hover highlight, so do not add per-row hover backgrounds inside it. `trace-panel.tsx` holds the trace, and `side-panel.tsx` holds the other panels and the resize handle. Colours and easing are tokens in `client/styles/theme.css` |
+| `client/src/components/` | React components. `glide.tsx` is the one shared hover highlight, so do not add per-row hover backgrounds inside it. `trace-panel.tsx` holds the trace's Details and Raw views, `trace-summary.tsx` its Summary view, and `side-panel.tsx` holds the other panels and the resize handle. Colours and easing are tokens in `client/styles/theme.css` |
 
 ## Conventions
 
@@ -72,7 +73,9 @@ These rules are graded. Do not weaken them, even to make something easier:
 - **Motion:** keep it behind the `prefers-reduced-motion` block in `app.css`.
 - **Icons:** import from `lucide-react` directly where they are used, with no wrapper.
 - **Layout:** the app is one fixed screen at every width, and only inner lists scroll. Below 1100px the sidebar is a rail with a drawer. At 760px and below, panels open over the chat.
+- **Confirmation card:** send it only from `finishBooking` and `finishChange`, which run after verification. It never carries a button.
 - **Cards:** every card fills the chat column and uses the shared `card` shell. The main action is the rightmost button at the bottom-right. Cards respond to the chat's width through a container query, not the screen's.
+- **Summary view honesty:** every line, including the safety checks, must be worked out from recorded events, so a run that broke a rule shows a failed check. Never hardcode a pass. Details must keep showing state transitions, model calls, tool arguments and latency, because the assignment grades them.
 - **Traces:** each run keeps its own JSONL file, while `SessionView.trace` holds every run of the session in order. `runId` and the limits in the view are the current run's.
 - **Generated files:** `docs/eval-table.md` and `docs/traces/` come from `npm test`. Never edit them by hand.
 - **Design note:** the assignment caps `docs/design-note.md` at two pages, and it is close to that. Trim something when adding to it.
@@ -110,6 +113,7 @@ Known limits:
 
 - `OpenRouterModel` has never made a live call, because no key was available.
 - The wall-clock cap is checked between calls. A hung call is cut off by its own timeout instead.
-- Client behaviour has no tests in the repo, including the 800ms Confirm guard. It has only been checked with browser scripts outside the repo.
+- Only the trace summary logic has client tests in the repo. Other client behaviour, including the 800ms Confirm guard, has only been checked with browser scripts outside the repo.
 - Shrinking a desktop window without reloading can leave the drawer open and a panel over the chat. A reload fixes it.
+- The buttons on a confirmation card find a booking by service, so with two upcoming bookings of one service the agent asks which.
 - `cards.tsx`, `chat.tsx`, `sidebar.tsx` and `side-panel.tsx` each hold several components. Splitting them is an optional clean-up the owner has not yet taken up.

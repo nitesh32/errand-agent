@@ -1,6 +1,6 @@
 import { SCENARIOS } from '../mock/mock-provider.ts';
 import type { MockProvider } from '../mock/mock-provider.ts';
-import { applyMemory, describeMemory, remind, showBookings } from './replies.ts';
+import { applyMemory, confirmFact, describeMemory, remind, showBookings } from './replies.ts';
 import { say, trace } from './session.ts';
 import type { Turn } from './session.ts';
 
@@ -28,7 +28,8 @@ async function runMemoryCommand(turn: Turn, [op, key, ...value]: string[], comma
   if (!op) return describeMemory(turn);
   if (op === 'set' && key && value.length) return applyMemory(turn, { op, key, value: value.join(' '), evidence: command }, command);
   if (op === 'forget' && key) return applyMemory(turn, { op, key }, command);
-  say(turn, 'Use /memory, /memory set <key> <value>, or /memory forget <key>. Keys: area, earliest_time, technician:<service>, all.');
+  if (op === 'confirm' && key) return confirmFact(turn, key);
+  say(turn, 'Use /memory, /memory set <key> <value>, /memory confirm <key>, or /memory forget <key>. Keys: area, earliest_time, technician:<service>, all.');
 }
 
 function runScenarioCommand(turn: Turn, scenario: string | undefined, provider: MockProvider): void {

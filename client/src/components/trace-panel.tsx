@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { formatTraceTime } from '../format.ts';
+import { readStorage, writeStorage } from '../storage.ts';
+import { groupByTurn } from '../trace-steps.ts';
 import type { SessionView, TraceEvent, WorkflowState } from '../types.ts';
+import { OutcomeBanner, PlainTimeline, SafetyCard } from './trace-summary.tsx';
 
 const STATE_LABELS: Record<WorkflowState, { label: string; tone?: string }> = {
   IDLE: { label: 'Ready' },
@@ -27,6 +30,14 @@ const TAG_CLASS: Record<TraceEvent['type'], string> = {
   LIMIT: 'tag-bad',
   ERROR: 'tag-bad',
 };
+
+const VIEW_KEY = 'errand.traceView';
+const VIEWS = [
+  { key: 'summary', label: 'Summary' },
+  { key: 'details', label: 'Details' },
+  { key: 'raw', label: 'Raw' },
+] as const;
+type View = (typeof VIEWS)[number]['key'];
 
 const FILTERS: { label: string; types?: TraceEvent['type'][] }[] = [
   { label: 'All' },
@@ -77,22 +88,6 @@ function eventBody(event: TraceEvent): string {
   return JSON.stringify(fields, null, 2);
 }
 
-interface Turn {
-  title: string;
-  events: { event: TraceEvent; index: number }[];
-}
-
-/** A run can hold several messages. Each message the user typed starts a new turn. */
-function groupByTurn(trace: TraceEvent[]): Turn[] {
-  const turns: Turn[] = [];
-  trace.forEach((event, index) => {
-    const startsTurn = event.type === 'INPUT' && event.text !== undefined;
-    if (startsTurn || !turns.length) turns.push({ title: startsTurn ? (event.text as string) : 'Start', events: [] });
-    turns[turns.length - 1].events.push({ event, index });
-  });
-  return turns;
-}
-
 /** Native details keeps a row open across live polling, with no state to manage. */
 function TraceRow({ event }: { event: TraceEvent }) {
   const [title, preview] = describeEvent(event);
@@ -125,7 +120,7 @@ function Meter({ label, value, limit, display }: { label: string; value: number;
 
 export function TracePanel({ session: { runId, state, trace, limits }, lastTurnMs, live }: { session: SessionView; lastTurnMs: number; live: boolean }) {
   const [filter, setFilter] = useState('All');
-  const [showRaw, setShowRaw] = useState(false);
+  const [view, setView] = useState<View>(() => readStorage<View>(VIEW_KEY, 'summary'));
   const injections = trace.filter((event) => event.flaggedReview).length;
   const { label, tone = '' } = STATE_LABELS[state];
   const body = useRef<HTMLDivElement>(null);
@@ -133,48 +128,64 @@ export function TracePanel({ session: { runId, state, trace, limits }, lastTurnM
   const countOf = ({ types }: (typeof FILTERS)[number]) => (types ? trace.filter((event) => types.includes(event.type)).length : trace.length);
   // A new run starts empty, so a chosen filter can have nothing left to show.
   const active = FILTERS.find((item) => item.label === filter && countOf(item)) ?? FILTERS[0];
-  const turns = groupByTurn(trace);
 
   // The newest event is what matters while watching a run.
   useEffect(() => {
     body.current?.scrollTo({ top: body.current.scrollHeight });
-  }, [trace.length]);
+  }, [trace.length, view]);
+
+  function chooseView(next: View) {
+    setView(next);
+    writeStorage(VIEW_KEY, next);
+  }
 
   return (
     <>
       <div className="panel-header">
-        <span className="panel-title">Trace <span className="mono small muted">{runId}</span></span>
+        <span className="panel-title">What the agent did</span>
         <span className="button-row">
-          {injections > 0 && <span className="chip chip-bad">{injections} injection ignored</span>}
           {live && <span className="chip"><span className="dot dot-live" />live</span>}
-          <span className={`chip status-chip ${tone}`}>{label}</span>
+          <span className="filter-chips trace-view" role="group" aria-label="Trace view">
+            {VIEWS.map(({ key, label: viewLabel }) => (
+              <button type="button" key={key} className="filter-chip" aria-pressed={view === key} onClick={() => chooseView(key)}>{viewLabel}</button>
+            ))}
+          </span>
         </span>
       </div>
-      <div className="meters">
-        <Meter label="Model" value={limits.modelCalls} limit={limits.maxModelCalls} display={`${limits.modelCalls} / ${limits.maxModelCalls}`} />
-        <Meter label="Tools" value={limits.toolCalls} limit={limits.maxToolCalls} display={`${limits.toolCalls} / ${limits.maxToolCalls}`} />
-        <Meter label="Last turn" value={lastTurnMs} limit={limits.maxTurnMs} display={`${(lastTurnMs / 1000).toFixed(1)}s / ${limits.maxTurnMs / 1000}s`} />
-      </div>
-      {trace.length > 0 && (
+      {view === 'summary' && <OutcomeBanner trace={trace} state={state} />}
+      {view !== 'summary' && (
+        <>
+          <div className="trace-run">
+            <span className="mono small muted trace-run-id">{runId}</span>
+            <span className="button-row">
+              {injections > 0 && <span className="chip chip-bad">{injections} injection ignored</span>}
+              <span className={`chip status-chip ${tone}`}>{label}</span>
+            </span>
+          </div>
+          <div className="meters">
+            <Meter label="Model" value={limits.modelCalls} limit={limits.maxModelCalls} display={`${limits.modelCalls} / ${limits.maxModelCalls}`} />
+            <Meter label="Tools" value={limits.toolCalls} limit={limits.maxToolCalls} display={`${limits.toolCalls} / ${limits.maxToolCalls}`} />
+            <Meter label="Last turn" value={lastTurnMs} limit={limits.maxTurnMs} display={`${(lastTurnMs / 1000).toFixed(1)}s / ${limits.maxTurnMs / 1000}s`} />
+          </div>
+        </>
+      )}
+      {view === 'details' && trace.length > 0 && (
         <div className="trace-tools">
           <div className="filter-chips" role="group" aria-label="Filter trace by event type">
-            {!showRaw && FILTERS.filter(countOf).map((item) => (
+            {FILTERS.filter(countOf).map((item) => (
               <button type="button" key={item.label} className="filter-chip" aria-pressed={item === active} onClick={() => setFilter(item.label)}>
                 {item.label}
                 <span className="mono filter-count">{countOf(item)}</span>
               </button>
             ))}
           </div>
-          <div className="filter-chips trace-view" role="group" aria-label="Trace view">
-            <button type="button" className="filter-chip" aria-pressed={!showRaw} onClick={() => setShowRaw(false)}>Events</button>
-            <button type="button" className="filter-chip" aria-pressed={showRaw} onClick={() => setShowRaw(true)}>Raw</button>
-          </div>
         </div>
       )}
       <div className="panel-body" ref={body}>
         {!trace.length && <p className="panel-empty">Events appear here as the agent works.</p>}
-        {showRaw && <pre className="mono trace-raw">{trace.map((event) => JSON.stringify(event)).join('\n')}</pre>}
-        {!showRaw && turns.map((turn, position) => {
+        {view === 'summary' && trace.length > 0 && <PlainTimeline trace={trace} keyPrefix={runId} />}
+        {view === 'raw' && <pre className="mono trace-raw">{trace.map((event) => JSON.stringify(event)).join('\n')}</pre>}
+        {view === 'details' && groupByTurn(trace).map((turn, position) => {
           const events = turn.events.filter(({ event }) => !active.types || active.types.includes(event.type));
           if (!events.length) return null;
           return (
@@ -189,6 +200,7 @@ export function TracePanel({ session: { runId, state, trace, limits }, lastTurnM
           );
         })}
       </div>
+      {view === 'summary' && <SafetyCard trace={trace} />}
     </>
   );
 }

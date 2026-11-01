@@ -4,7 +4,9 @@ import { Check, ChevronRight, ShieldAlert, TriangleAlert, X } from 'lucide-react
 import { formatSlot, rupees, slotMessage } from '../format.ts';
 import type { Card, SendMessage, SessionView, Step } from '../types.ts';
 import { BookingsCard } from './bookings-card.tsx';
+import { ConfirmationCard } from './confirmation-card.tsx';
 import { Glide } from './glide.tsx';
+import { MemoryCard } from './memory-rows.tsx';
 
 type CardOf<T extends Card['type']> = Extract<Card, { type: T }>;
 
@@ -13,6 +15,8 @@ export interface CardActions {
   pending: boolean;
   approvals: SessionView['approvals'];
   bookings: SessionView['bookings'];
+  memory: SessionView['memory'];
+  fillComposer: (text: string) => void;
 }
 
 const MAX_TIME_CHIPS = 6;
@@ -123,6 +127,8 @@ function OptionsCard({ title, options, current, send, pending }: OptionsCardProp
 /** In a long chat Confirm appears under the pointer, so a double-click on Continue must not reach it. */
 const CONFIRM_DELAY_MS = 800;
 
+const APPROVED_VERB = { book: '', reschedule: 'moving ', cancel: 'cancelling ' };
+
 const OUTCOME_LABEL = { GRANTED: 'Confirmed', CONSUMED: 'Confirmed', VOID: 'Voided' };
 
 function ApprovalCard({ approvalId, action, providerName, slot, price, note, expiresAt, send, pending, approvals }: CardOf<'approval'> & CardActions) {
@@ -131,6 +137,10 @@ function ApprovalCard({ approvalId, action, providerName, slot, price, note, exp
   const confirm = () => {
     if (performance.now() - shownAt.current >= CONFIRM_DELAY_MS) send('yes', approvalId);
   };
+  // Once used, the receipt below is the result, so this shrinks to one quiet line.
+  if (status === 'CONSUMED') {
+    return <div className="approved-line"><Check size={13} />You approved {APPROVED_VERB[action]}{providerName} · {formatSlot(slot)} · {rupees(price)}</div>;
+  }
   const expires = expiresAt && new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return (
     <div className={status === 'VOID' ? 'card card-void' : 'card'}>
@@ -206,6 +216,10 @@ export function MessageCard({ card, current, ...actions }: { card: Card; current
       return <ReviewsCard {...card} />;
     case 'bookings':
       return <BookingsCard bookings={actions.bookings} />;
+    case 'confirmation':
+      return <ConfirmationCard {...card} bookings={actions.bookings} send={actions.send} pending={actions.pending} />;
+    case 'memory':
+      return <MemoryCard memory={actions.memory} bookings={actions.bookings} send={actions.send} fillComposer={actions.fillComposer} />;
     case 'steps':
       return <div className="card steps">{card.steps.map((step) => <StepRow key={step.label + step.detail} {...step} />)}</div>;
   }
