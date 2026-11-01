@@ -103,7 +103,7 @@ export function App() {
   };
   // During a turn the panel shows live progress. Messages stay with the main query.
   const panelSession = live ? { ...session, state: live.state, trace: live.trace, runId: live.runId, limits: live.limits } : session;
-  const isHome = isEmptyChat && panel === restingPanel();
+  const isHome = isEmptyChat && (panel === 'none' || panel === restingPanel());
   const error = sendMessage.error && `${sendMessage.error.message}. Please try again.`;
 
   return (
@@ -124,7 +124,7 @@ export function App() {
         <Home key={sessionId} composer={composer} />
       ) : (
         <main className="workspace">
-          <Chat composerKey={sessionId} session={session} loading={loadingChat} liveState={live?.state ?? session.state} error={error} composer={composer} />
+          <Chat composerKey={sessionId} session={session} loading={loadingChat} liveState={live?.state ?? session.state} error={error} composer={composer} panelOpen={panel !== 'none'} onTogglePanel={() => setPanel(panel === 'none' ? 'trace' : 'none')} />
           <SidePanel
             panel={panel}
             session={panelSession}

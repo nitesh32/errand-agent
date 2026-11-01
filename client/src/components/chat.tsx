@@ -1,4 +1,5 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { chatTitle } from '../format.ts';
 import type { Card, Message, SendMessage, SessionView, WorkflowState } from '../types.ts';
 import { MessageCard } from './cards.tsx';
@@ -165,14 +166,19 @@ interface ChatProps {
   liveState: WorkflowState;
   error: string | null;
   composer: ComposerProps;
+  panelOpen: boolean;
+  onTogglePanel: () => void;
 }
 
-export function Chat({ composerKey, session, loading, liveState, error, composer }: ChatProps) {
+export function Chat({ composerKey, session, loading, liveState, error, composer, panelOpen, onTogglePanel }: ChatProps) {
   return (
     <section className="chat">
       {loading
         ? <ChatSkeleton />
         : <Thread key={session.id} session={session} liveState={liveState} error={error} send={composer.onSubmit} pending={composer.pending} />}
+      <button type="button" className="panel-toggle" aria-label={panelOpen ? 'Close panel' : 'Open trace'} title={panelOpen ? 'Close panel' : 'Open trace'} onClick={onTogglePanel}>
+        {panelOpen ? <PanelRightClose size={15} /> : <PanelRightOpen size={15} />}
+      </button>
       <div className="composer-wrap"><Composer key={composerKey} {...composer} /></div>
     </section>
   );
