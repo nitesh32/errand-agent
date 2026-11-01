@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Check, ChevronRight, ShieldAlert, TriangleAlert, X } from 'lucide-react';
 import { formatSlot, rupees, slotMessage } from '../format.ts';
@@ -120,13 +120,20 @@ function OptionsCard({ title, options, current, send, pending }: OptionsCardProp
   );
 }
 
+/** In a long chat Confirm appears under the pointer, so a double-click on Continue must not reach it. */
+const CONFIRM_DELAY_MS = 800;
+
 const OUTCOME_LABEL = { GRANTED: 'Confirmed', CONSUMED: 'Confirmed', VOID: 'Voided' };
 
 function ApprovalCard({ approvalId, action, providerName, slot, price, note, expiresAt, send, pending, approvals }: CardOf<'approval'> & CardActions) {
   const status = approvals.find((item) => item.id === approvalId)?.status ?? 'PENDING';
+  const shownAt = useRef(performance.now());
+  const confirm = () => {
+    if (performance.now() - shownAt.current >= CONFIRM_DELAY_MS) send('yes', approvalId);
+  };
   const expires = expiresAt && new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return (
-    <div className={status === 'VOID' ? 'card card-narrow card-void' : 'card card-narrow'}>
+    <div className={status === 'VOID' ? 'card card-void' : 'card'}>
       <div className="card-title spread">
         {APPROVAL_TEXT[action].title}
         {status === 'PENDING'
@@ -144,7 +151,7 @@ function ApprovalCard({ approvalId, action, providerName, slot, price, note, exp
         {status === 'PENDING' && (
           <span className="button-row">
             <button type="button" className="btn" disabled={pending} onClick={() => send('no')}>Change</button>
-            <button type="button" className="btn btn-primary" disabled={pending} onClick={() => send('yes', approvalId)}>{APPROVAL_TEXT[action].button}</button>
+            <button type="button" className="btn btn-primary" disabled={pending} onClick={confirm}>{APPROVAL_TEXT[action].button}</button>
           </span>
         )}
       </div>
@@ -155,7 +162,7 @@ function ApprovalCard({ approvalId, action, providerName, slot, price, note, exp
 /** React renders review text as text, so hostile markup can only ever display. */
 function ReviewsCard({ providerName, reviews }: CardOf<'reviews'>) {
   return (
-    <div className="review-list">
+    <div className="card review-list">
       <div className="card-title">Reviews · {providerName}</div>
       {reviews.map((review) => (
         <div className={review.flagged ? 'review review-flagged' : 'review'} key={review.id}>
@@ -200,6 +207,6 @@ export function MessageCard({ card, current, ...actions }: { card: Card; current
     case 'bookings':
       return <BookingsCard bookings={actions.bookings} />;
     case 'steps':
-      return <div className="steps">{card.steps.map((step) => <StepRow key={step.label + step.detail} {...step} />)}</div>;
+      return <div className="card steps">{card.steps.map((step) => <StepRow key={step.label + step.detail} {...step} />)}</div>;
   }
 }

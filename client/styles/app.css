@@ -105,7 +105,7 @@ button:disabled { cursor: default; }
 .user-message { align-self: flex-end; max-width: 78%; padding: 8px 12px; border-radius: var(--radius-window); background: var(--surface-muted); line-height: 20px; overflow-wrap: anywhere; }
 .agent-message { display: flex; flex-direction: column; gap: 10px; }
 .agent-text { line-height: 22px; white-space: pre-line; overflow-wrap: anywhere; }
-.quick-replies { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick-replies { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .working { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: var(--text-md); }
 .spinner { width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: var(--radius-pill); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -145,10 +145,11 @@ button:disabled { cursor: default; }
 
 /* Cards */
 .card { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow); }
-.card-narrow { max-width: 420px; gap: 10px; }
 .card-title { padding: 0 4px; font-size: var(--text-md); font-weight: 500; }
 .card-note { padding: 6px 8px; border-radius: var(--radius-control); background: var(--warn-bg); color: var(--warn); font-size: var(--text-sm); }
 .card-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 4px 0; }
+/* Stays on the right even when it wraps under the step label, so the main action never moves. */
+.card-actions .button-row { margin-left: auto; justify-content: flex-end; }
 .option { width: 100%; display: grid; grid-template-columns: 16px minmax(0, 1fr) 44px 124px 56px; gap: 10px; align-items: center; min-height: var(--row-height); padding: 6px 8px; border: 0; border-radius: var(--radius-control); background: transparent; font-size: var(--text-md); text-align: left; cursor: pointer; }
 .option:disabled { opacity: 0.7; }
 .option[aria-pressed='true'] { background: var(--primary-soft); }
@@ -177,9 +178,8 @@ button:disabled { cursor: default; }
 .facts dt { color: var(--text-muted); }
 .facts dd { margin: 0; }
 
-.review-list { display: flex; flex-direction: column; gap: 6px; }
-.review { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow); }
-.review-flagged { border-color: var(--bad-border); }
+.review { display: flex; flex-direction: column; gap: 6px; padding: 10px 4px; border-top: 1px solid var(--border-soft); }
+.review-flagged { padding: 10px 8px; border: 1px solid var(--bad-border); border-radius: var(--radius-control); }
 .review-text { font-size: var(--text-md); line-height: 20px; color: var(--text-strong-muted); }
 .review-quote { padding: 6px 8px; border-radius: var(--radius-control); background: var(--bad-bg); color: var(--bad-quote); font-size: var(--text-sm); line-height: 18px; overflow-wrap: anywhere; }
 .review-source { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--text-muted); }
@@ -202,10 +202,10 @@ button:disabled { cursor: default; }
 .bookings-table th.align-right, .align-right { text-align: right; }
 .nowrap { white-space: nowrap; }
 
-.steps { display: flex; flex-direction: column; gap: 6px; max-width: 480px; }
-.step { display: flex; align-items: center; gap: 8px; min-height: var(--row-height); padding: 6px 12px 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface); box-shadow: var(--shadow); font-size: var(--text-md); }
+.steps { gap: 0; padding-block: 4px; }
+.step { display: flex; align-items: center; gap: 8px; min-height: var(--row-height); padding: 6px 4px; border-bottom: 1px solid var(--border-soft); font-size: var(--text-md); }
+.step:last-child { border-bottom: 0; }
 .step-dot { width: 20px; height: 20px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; flex: none; color: var(--surface); background: var(--ok); }
-.step-warn { border-color: var(--warn-border); }
 .step-warn .step-dot { background: var(--warn); }
 .step-bad .step-dot { background: var(--bad); }
 .step-detail { margin-left: auto; text-align: right; overflow-wrap: anywhere; }
@@ -297,7 +297,6 @@ html, body { overflow: hidden; overscroll-behavior: none; }
   .panel-header { flex-wrap: wrap; }
   .panel-header .button-row { flex: 0 1 auto; flex-wrap: wrap; }
   .spread { flex-wrap: wrap; }
-  .step { border-radius: var(--radius-card); }
   .chat-header, .messages, .composer-wrap { padding-left: 16px; padding-right: 16px; }
 }
 

@@ -19,7 +19,7 @@ const REVEAL_MAX_MS = 1200;
 
 /** One-click answers. Never offered at approval: confirming stays on the card or a typed yes. */
 function quickReplies({ awaiting, state }: SessionView): string[] {
-  if (awaiting === 'fact') return ['Yes', 'No'];
+  if (awaiting === 'fact') return ['No', 'Yes'];
   if (awaiting === 'budget') return ['No limit'];
   if (awaiting === 'dateRange') return ['This week', 'Saturday'];
   return state === 'DONE' ? ['Show my bookings'] : [];

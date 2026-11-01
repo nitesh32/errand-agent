@@ -31,7 +31,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 2. **Side effects:** `book`, `cancel` and `reschedule` are called only through `GuardedTools`, which calls `assertApproved`. Any change to provider, slot or price voids the approval.
 3. **Booking:** save the idempotency key before the call. After a timeout, call `get_booking_status` before any retry. Never report success before verifying.
 4. **Untrusted text:** review text never reaches the model, state, memory or traces. Render it as text only, so never use `dangerouslySetInnerHTML`.
-5. **No accidental approval:** a stray Enter or a single click on an option must never approve. So Confirm never takes default focus, picking an option never auto-advances, and quick replies are never offered at approval.
+5. **No accidental approval:** a stray Enter or a single click on an option must never approve. So Confirm never takes default focus and ignores clicks in its first 800ms, picking an option never auto-advances, and quick replies are never offered at approval.
 6. **State:** change state only through `transition()`. A new state means updating `ALLOWED_TRANSITIONS`.
 7. **Limits:** charge every model and tool call. Every exit, including errors, ends with a clear message saying what did and did not happen.
 8. **Memory:** only `Memory.get` supplies facts to act on, and it hides unconfirmed inferred facts. Forgotten values stay only as hashes.
