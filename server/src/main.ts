@@ -9,7 +9,7 @@ import type { MockState } from './mock/mock-provider.ts';
 import type { Model } from './model/model.ts';
 import { OpenRouterModel } from './model/openrouter-model.ts';
 import { RuleModel } from './model/rule-model.ts';
-import { createApp } from './routes.ts';
+import { createApp } from './app.ts';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DATA_DIR = process.env.DATA_DIR ?? join(ROOT, 'data');

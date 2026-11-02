@@ -12,7 +12,7 @@ import { FileStore } from '../src/infra/file-store.ts';
 import { Tracer } from '../src/infra/tracer.ts';
 import { MockProvider } from '../src/mock/mock-provider.ts';
 import { RuleModel } from '../src/model/rule-model.ts';
-import { createApp } from '../src/routes.ts';
+import { createApp } from '../src/app.ts';
 
 let server: Server;
 let base: string;

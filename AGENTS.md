@@ -41,6 +41,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 
 | Path | Holds |
 |---|---|
+| `server/src/app.ts`, `routes.ts`, `handlers/`, `http.ts` | The HTTP server, the route table, request handlers, and request and response helpers |
 | `server/src/agent/agent.ts` | Entry point `handleMessage`, routing, failure messages |
 | `server/src/agent/collect-flow.ts` | Slots, questions, corrections, inferred fact questions |
 | `server/src/agent/booking-flow.ts` | Search, hold, approval request, book, verify, recovery |
