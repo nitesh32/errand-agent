@@ -55,6 +55,7 @@ These rules are graded. Do not weaken them, even to make something easier:
 | `client/src/api.ts` | All API calls, as TanStack Query hooks |
 | `client/src/types.ts` | API types, imported type-only from the server so they cannot drift |
 | `client/src/trace-steps.ts` | Plain pure functions that turn trace events into the Summary view's steps, outcome and safety checks. Tested in `client/tests/` |
+| `client/src/app.tsx`, `hooks/use-chat-app.ts`, `components/app-layout.tsx` | The entry point, the app's state and actions, and its page layout |
 | `client/src/viewport.ts` | Screen-width checks matching the media queries in `app.css`, and which panel shows by default |
 | `client/src/components/` | React components. `glide.tsx` is the one shared hover highlight, so do not add per-row hover backgrounds inside it. `trace-panel.tsx` holds the trace's Details and Raw views, `trace-summary.tsx` its Summary view, and `side-panel.tsx` holds the other panels and the resize handle. Colours and easing are tokens in `client/styles/theme.css` |
 
