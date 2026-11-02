@@ -52,7 +52,7 @@ Each run also writes one JSONL file under `data/traces/`. A sample is in [docs/t
 ```
 server/   TypeScript agent, mock provider, HTTP API, tests and evals. No runtime dependencies.
 client/   React, TypeScript and TanStack Query, built with Vite. Talks to the server only over HTTP.
-docs/     Design note, eval table, sample trace
+docs/     Design note, eval table, bug log, sample trace
 ```
 
 ## API
@@ -84,5 +84,6 @@ Where the assignment left something open:
 
 - [Design note](docs/design-note.md)
 - [Eval table](docs/eval-table.md)
+- [Three real bugs](docs/bugs.md)
 - [Sample trace: timeout after success](docs/traces/timeout-after-success.jsonl)
 - [Guide for coding agents](AGENTS.md)

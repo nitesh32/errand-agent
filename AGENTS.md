@@ -105,12 +105,6 @@ Done: the server, evals and client. All eight must-haves are implemented. No nic
 
 Remaining deliverables:
 
-- `docs/bugs.md`: three real bugs, each with what broke, why, the fix and its regression test. Use only bugs that really happened. The owner is reviewing the bugs first, so do not write this until asked. Candidates:
-  - Idempotency keys collided across sessions, so a second booking returned the first one and reported false success. Guarded by the "Two sessions book two errands" scenario.
-  - "No limit" was read as rejecting a pending fact, which forgot the area. Guarded by the "No limit is not a no" scenario.
-  - "This week" on a Sunday meant only the rest of today. Guarded by a test in `rule-model.test.ts`.
-  - Scenarios worked only once, because a shared array was consumed. Guarded by a test in `mock-provider.test.ts`.
-  - A new run hid the earlier runs from the trace panel. Guarded by a test in `agent.test.ts`.
 - The 3 to 5 minute demo recording, showing chat and trace side by side. Only the owner can record it, and no script is wanted for now.
 
 Known limits:
